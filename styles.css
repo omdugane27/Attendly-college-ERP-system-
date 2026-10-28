@@ -311,3 +311,8 @@ body:has(#campus)>main>header p:not(.eyebrow){color:var(--sub);font-size:13px;ma
 @media(max-width:420px){.service-grid{grid-template-columns:1fr}.service-card{min-height:120px}}
 
 
+
+
+/* Keep dashboard KPI values readable and prevent oversized course-name text */
+#page-content .stat-value{font-size:20px;font-weight:700;letter-spacing:-.02em;line-height:1.35;overflow-wrap:anywhere}
+@media(max-width:680px){#page-content .stat-value{font-size:18px;letter-spacing:0;line-height:1.35}}
