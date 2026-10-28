@@ -440,8 +440,16 @@
   function isHodPerson(p) { return p?.institutional_role==="hod" || p?.role==="hod" || String(p?.student_number||"").toUpperCase().startsWith("HOD-"); }
   function displayRoleForPerson(p) { return isHodPerson(p) ? "HOD" : p?.role==="admin" ? "Admin" : p?.role==="teacher" ? "Teacher" : "Student"; }
   function uniquePeopleForCards(role) { return [...new Map(state.cache.people.filter(p=>role==="hod"?isHodPerson(p):role==="teacher"?(p.role==="teacher"&&!isHodPerson(p)):p.role===role&&!isHodPerson(p)).map(p=>[String(p.id||p.email||"").toLowerCase(),p])).values()]; }
-  function renderPeople() {
+  async function renderPeople() {
     if(state.profile.role!=="admin"){setView("overview");return;}
+    // Refresh photo paths on every directory render so uploads made after Admin login appear without re-login.
+    const latestPhotoPaths = await sb.from("profiles").select("id,profile_photo_path");
+    if (!latestPhotoPaths.error && Array.isArray(latestPhotoPaths.data)) {
+      const photoPathById = new Map(latestPhotoPaths.data.map(row => [String(row.id), row.profile_photo_path || null]));
+      state.cache.people = state.cache.people.map(p => photoPathById.has(String(p.id)) ? {...p, profile_photo_path: photoPathById.get(String(p.id))} : p);
+    } else if (latestPhotoPaths.error) {
+      console.warn("Could not refresh profile photo paths:", latestPhotoPaths.error.message);
+    }
     setHeading("People & roles","View all students and staff across departments. Filter the institution directory by department.","ADMINISTRATION",button("Create student ID card","create-student-id-card","button button-outline")+" "+button("Create teacher ID card","create-teacher-id-card","button button-outline")+" "+button("Create HOD ID card","create-hod-id-card","button button-outline")+" "+button("Create Teacher account","create-teacher","button button-primary")+" "+button("Create HOD account","create-hod","button button-primary")+" "+button("View setup notes","show-role-help","button button-outline"));
     const peopleTab=state.peopleView||"teachers";
     const uniquePeople=[...new Map(state.cache.people.map(p=>[String(p.id||p.email||"").toLowerCase(),p])).values()];
@@ -471,13 +479,22 @@
       } catch(err) {toast(err.message||"Could not create department.","error");if(btn){btn.disabled=false;btn.textContent="Create department";}}
     });
     Promise.all(people.filter(p=>p.profile_photo_path).map(async p=>{
-      const avatar=document.querySelector('[data-profile-avatar="'+p.id+'"]');
+      const avatar=[...document.querySelectorAll("[data-profile-avatar]")].find(el=>el.dataset.profileAvatar===String(p.id));
       if(!avatar)return;
-      const {data,error}=await sb.storage.from("student-photos").createSignedUrl(p.profile_photo_path,300);
-      if(error||!data?.signedUrl)return;
-      avatar.innerHTML='<img src="'+data.signedUrl+'" alt="Profile photo" style="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block">';
-      avatar.style.padding="0";
-      avatar.style.overflow="hidden";
+      const {data,error}=await sb.storage.from("student-photos").createSignedUrl(p.profile_photo_path,3600);
+      if(error||!data?.signedUrl){
+        console.warn("Profile photo could not be signed for directory entry:",p.id,error?.message||"No signed URL");
+        avatar.title="Photo is saved but could not be loaded. Check Storage SELECT policy for student-photos.";
+        avatar.dataset.photoStatus="unavailable";
+        return;
+      }
+      const img=document.createElement("img");
+      img.src=data.signedUrl;img.alt="Profile photo";img.loading="lazy";
+      img.style.cssText="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block";
+      img.onerror=()=>{avatar.dataset.photoStatus="unavailable";avatar.title="Photo URL was created, but the image could not be downloaded.";};
+      avatar.replaceChildren(img);
+      avatar.style.padding="0";avatar.style.overflow="hidden";
+      avatar.dataset.photoStatus="loaded";
     })).catch(err=>console.warn("Could not load profile photos for admin directory",err));
     loadProfileChangeRequests();
     $("people-search").addEventListener("input",()=>renderPeople());
