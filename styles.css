@@ -168,56 +168,15 @@ html[data-theme="dark"] #page-content input:not([type=checkbox]):not([type=radio
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
 
-/* Mobile login layout hotfix */
-@media screen and (max-width: 680px), screen and (max-device-width: 680px), screen and (pointer: coarse) {
-  html, body { width: 100%; min-width: 0; }
-  #auth-screen.auth-screen { display:grid !important; grid-template-columns:minmax(0,1fr) !important; min-height:100svh; width:100%; }
-  #auth-screen .auth-brand-panel { display:none !important; }
-  #auth-screen .auth-form-panel { display:grid !important; grid-column:1/-1; width:100%; min-width:0; min-height:100svh; box-sizing:border-box; padding:24px 18px !important; align-content:center; }
-  #auth-screen .auth-form-wrap { width:min(100%,430px) !important; margin-inline:auto; box-sizing:border-box; }
-  #auth-screen .auth-mobile-brand { display:flex !important; margin-bottom:28px !important; }
-  #auth-screen .auth-form-heading { margin-bottom:22px; }
-  #auth-screen .auth-form-heading h2 { font-size:clamp(25px,7vw,30px); }
-  #auth-screen .auth-form-wrap input { box-sizing:border-box; min-width:0; width:100%; }
-}
-@media screen and (max-width: 380px), screen and (max-device-width: 380px) {
-  #auth-screen .auth-form-panel { padding:20px 14px !important; }
-  #auth-screen .auth-mobile-brand { margin-bottom:22px !important; }
-}
 
 
-/* Responsive fix for Android browsers reporting a wider CSS viewport */
-@media screen and (max-width: 1000px), screen and (max-device-width: 1000px) {
-  #auth-screen.auth-screen {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    width: 100% !important;
-    min-height: 100vh !important;
-    min-height: 100dvh !important;
-  }
-  #auth-screen.auth-screen > .auth-brand-panel {
-    display: none !important;
-  }
-  #auth-screen.auth-screen > .auth-form-panel {
-    display: flex !important;
-    grid-column: 1 / -1 !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    min-height: 100vh !important;
-    min-height: 100dvh !important;
-    padding: 24px 18px !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-sizing: border-box !important;
-  }
-  #auth-screen .auth-form-wrap {
-    width: 100% !important;
-    max-width: 430px !important;
-    margin: 0 auto !important;
-    box-sizing: border-box !important;
-  }
-  #auth-screen .auth-mobile-brand {
-    display: flex !important;
-    margin-bottom: 24px !important;
-  }
+/* Keep the login email field white, matching the original appearance. */
+#auth-email {
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #dbe2ed !important;
+}
+#auth-email::placeholder {
+  color: #64748b !important;
+  opacity: 1;
 }
