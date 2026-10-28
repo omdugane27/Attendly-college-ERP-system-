@@ -1,9 +1,8 @@
 name: Deploy Attendly to GitHub Pages
 
+# Manual-only duplicate workflow. Automatic deployment is handled by deploy-pages.yml
+# to avoid two workflows competing for the same GitHub Pages environment.
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
