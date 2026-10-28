@@ -327,10 +327,32 @@
       content += panel("Personal information","Submit corrections to your personal details. Changes take effect only after Admin approval.",
         '<div class="hint">You can request changes to your name, contact details, guardian information and other personal fields. Your department, course, student ID and enrollment status cannot be changed here.</div><div style="margin-top:12px">'+button("Update personal information","student-profile-edit","button button-primary")+'</div>');
     }
+    if(role==="admin") content+=panel("Institution-wide attendance","Filter attendance separately for Students, Teachers and HODs.",'<div class="filters" style="align-items:end"><label>Role<select id="admin-attendance-role" class="inline-select"><option value="all">All roles</option><option value="student">Students</option><option value="teacher">Teachers</option><option value="hod">HODs</option></select></label><label>From date<input id="admin-attendance-from" type="date" class="inline-select"></label><label>To date<input id="admin-attendance-to" type="date" class="inline-select"></label><button type="button" class="button button-secondary" data-action="admin-attendance-reset">Reset filters</button></div><div id="admin-attendance-summary" class="stats-grid" style="margin:14px 0"></div><div id="admin-attendance-results">Loading attendance…</div>');
     $("page-content").innerHTML=content;
-    if(role==="admin") loadProfileChangeRequests();
+    if(role==="admin"){loadProfileChangeRequests();loadAdminOverallAttendance().catch(e=>{const el=$("admin-attendance-results");if(el)el.innerHTML='<div class="alert alert-error">'+escapeHtml(e.message||"Could not load attendance.")+'</div>';});}
     requestAnimationFrame(()=>{drawBar($("trend-chart"),weekly);drawDonut($("status-chart"),counts.map(c=>({value:c.value})));});
     state.chartEvents=[()=>{drawBar($("trend-chart"),weekly);drawDonut($("status-chart"),counts.map(c=>({value:c.value})));}];
+  }
+  async function loadAdminOverallAttendance() {
+    const result=await sb.from("staff_attendance_records").select("id,staff_id,attendance_date,status,notes").order("attendance_date",{ascending:false}).limit(2000);
+    if(result.error) throw result.error;
+    const profiles=new Map((state.cache.people||[]).map(p=>[String(p.id),p]));
+    const studentRows=(state.cache.records||[]).map(r=>{const p=profiles.get(String(r.student_id));return {date:r.attendance_date,person:p?.full_name||personName(r.student_id),email:p?.email||"",role:"student",label:"Student",status:r.status,detail:assignedClassSubject(r.class_subject_id),notes:r.notes||""};});
+    const staffRows=(result.data||[]).map(r=>{const p=profiles.get(String(r.staff_id));const hod=!!p&&(p.institutional_role==="hod"||p.role==="hod");return {date:r.attendance_date,person:p?.full_name||personName(r.staff_id),email:p?.email||"",role:hod?"hod":"teacher",label:hod?"HOD":"Teacher",status:r.status,detail:"Staff attendance",notes:r.notes||""};});
+    const rows=[...studentRows,...staffRows].sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
+    const root=$("admin-attendance-results");if(!root)return;
+    const render=()=>{
+      const role=$("admin-attendance-role")?.value||"all",from=$("admin-attendance-from")?.value||"",to=$("admin-attendance-to")?.value||"";
+      const filtered=rows.filter(r=>(role==="all"||r.role===role)&&(!from||r.date>=from)&&(!to||r.date<=to));
+      const keys=[["student","Student attendance"],["teacher","Teacher attendance"],["hod","HOD attendance"]];
+      const summary=$("admin-attendance-summary");
+      if(summary)summary.innerHTML=keys.map(([key,label])=>{const rr=rows.filter(r=>r.role===key&&(!from||r.date>=from)&&(!to||r.date<=to));const attended=rr.filter(r=>["present","late","half_day"].includes(r.status)).length;return stat(label,rr.length?Math.round(attended/rr.length*100)+"%":"—",rr.length+" records","◷");}).join("");
+      const html=filtered.slice(0,300).map(r=>'<tr><td>'+fmtDate(r.date)+'</td><td><strong>'+escapeHtml(r.person)+'</strong><small style="display:block">'+escapeHtml(r.email)+'</small></td><td><span class="badge badge-role">'+r.label+'</span></td><td>'+badge(r.status)+'</td><td>'+escapeHtml(r.detail)+'</td><td>'+escapeHtml(r.notes||"—")+'</td></tr>');
+      root.innerHTML=table(["DATE","PERSON","ROLE","STATUS","CLASS / SOURCE","NOTES"],html,"No matching attendance records","Try another role or date range. Up to 300 matching records are shown.");
+    };
+    ["admin-attendance-role","admin-attendance-from","admin-attendance-to"].forEach(id=>$(id)?.addEventListener("change",render));
+    $("page-content").querySelector('[data-action="admin-attendance-reset"]')?.addEventListener("click",()=>{["admin-attendance-role"].forEach(id=>{const el=$(id);if(el)el.value="all";});["admin-attendance-from","admin-attendance-to"].forEach(id=>{const el=$(id);if(el)el.value="";});render();});
+    render();
   }
   function renderAttendance() {
     const role=state.profile.role,institutional=state.profile.institutional_role;
