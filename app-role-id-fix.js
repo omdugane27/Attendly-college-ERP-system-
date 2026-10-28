@@ -415,7 +415,7 @@
   async function saveStaffAttendance(){
     const isHod=state.profile?.institutional_role==="hod"||state.profile?.role==="hod";
     if(state.profile?.role!=="admin"&&!isHod)throw new Error("Only Admin or HOD can record teacher attendance.");
-    const staff_id=$("staff-attendance-person")?.value,attendance_date=$("staff-attendance-date")?.value,status=$("staff-attendance-status")?.value,notes=$("staff-attendance-note")?.value.trim()||null;
+    const staff_id=$("staff-attendance-person")?.value,attendance_date=$("staff-attendance-date")?.value,status=$("staff-attendance-status")?.value,notes=$("staff-attendance-note")?.value.trim()||"";
     if(!staff_id||!attendance_date||!status)throw new Error("Choose staff member, date and attendance status.");
     const staff=state.cache.people.find(p=>p.id===staff_id);
     const isTeachingStaff=p=>p&&p.role==="teacher"&&!["hod","admin","system_admin"].includes(String(p.institutional_role||"").toLowerCase());
