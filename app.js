@@ -182,6 +182,11 @@
     const approvedStudentRows=(legacyReviews||[]).filter(x=>(x.enrollment_status||"pending")==="approved").map(x=>'<tr><td>'+escapeHtml(x.full_name||"Student")+'</td><td>'+escapeHtml(x.email||"—")+'</td><td>'+escapeHtml(x.course_name||"Course not assigned")+'</td><td>'+escapeHtml(String(x.requested_semester||"—"))+'</td><td><span class="badge badge-present">Approved — login enabled</span></td></tr>');
     const appRows=pendingApps.map(x=>{const course=deptCourses.find(y=>y.id===x.course_id);return '<tr><td>'+escapeHtml(personName(x.student_id))+'</td><td>'+escapeHtml(course?.name||"Course")+'</td><td>'+x.requested_semester+'</td><td><button class="button button-small" data-action="course-application-review" data-id="'+x.id+'" data-status="approved">Approve login</button> <button class="button button-small button-secondary" data-action="course-application-review" data-id="'+x.id+'" data-status="rejected">Reject</button></td></tr>';});
     const deptCourseRows=deptCourses.map(x=>'<tr><td>'+escapeHtml(x.name)+'</td><td>'+escapeHtml(x.code)+'</td><td>'+escapeHtml(x.department)+'</td><td>'+x.duration_years+'</td><td><span class="badge badge-'+(x.active?'present':'absent')+'">'+(x.active?'Active':'Closed')+'</span><div style="margin-top:6px"><button class="button button-small '+(x.active?'button-secondary':'button-outline')+'" data-action="hod-course-active" data-id="'+x.id+'" data-active="'+(x.active?'true':'false')+'">'+(x.active?'Close course':'Reopen course')+'</button></div></td></tr>');
+    const {data:courseSubjectData,error:courseSubjectError}=await sb.rpc("hod_list_course_subjects");
+    if(courseSubjectError) console.warn("Course subjects:",courseSubjectError.message);
+    const courseSubjectRows=(courseSubjectData||[]).filter(x=>deptCourses.some(c=>c.id===x.course_id)).map(x=>'<tr><td>'+escapeHtml(x.course_name)+' ('+escapeHtml(x.course_code)+')</td><td>'+escapeHtml(String(x.semester))+'</td><td>'+escapeHtml(x.subject_name)+'</td><td>'+escapeHtml(x.subject_code)+'</td></tr>');
+    const subjectCourseOptions=deptCourses.filter(c=>c.active!==false).map(c=>'<option value="'+c.id+'">'+escapeHtml(c.name)+' ('+escapeHtml(c.code)+')</option>').join("");
+    const courseSubjectForm='<form id="hod-course-subject-form" class="form-grid"><label>Course<select name="course_id" required><option value="">Choose course</option>'+subjectCourseOptions+'</select></label><label>Subject name<input name="subject_name" required maxlength="120" placeholder="e.g. Data Structures"></label><label>Subject code<input name="subject_code" required maxlength="20" placeholder="e.g. BCA201"></label><label>Semester<input name="semester" type="number" min="1" max="12" value="1" required></label><button class="button button-primary" type="submit" '+(subjectCourseOptions?'':'disabled')+'>Add subject to course</button></form>';
     const assignableCourses=deptCourses.filter(c=>c.active!==false);
     const {data:assignableData,error:assignableError}=await sb.rpc("hod_list_assignable_students");
     if(assignableError) console.error("HOD assignable students RPC failed:",assignableError.message);
@@ -198,6 +203,7 @@
       +panel("Assign student department & course","Assign students only within your HOD department: "+escapeHtml(dept),table(["STUDENT","CURRENT DEPARTMENT","CURRENT COURSE","ASSIGN COURSE","SEMESTER","ACTION"],assignmentRows,"No students to assign","Students already assigned to another department are not shown."))
       +panel("Create course","Publish a course for student registration",courseForm)
       +panel("Department courses","Courses available for student registration. HOD can close or reopen courses here.",table(["COURSE","CODE","DEPARTMENT","YEARS","STATUS / ACTION"],deptCourseRows,"No courses","Create courses through the course management workflow."))
+      +panel("Course-wise subjects","Add and view subjects separately for each course and semester.",courseSubjectForm+table(["COURSE","SEMESTER","SUBJECT","SUBJECT CODE"],courseSubjectRows,"No subjects added","Choose a course and add its first subject above."))
       +panel("Pending approvals","Department leave and condonation requests",table(["REQUEST","STUDENT","DATES","REASON","DECISION"],approvalRows,"No pending requests","There are no pending requests right now."))
       +panel("Attendance shortage watchlist","Students below the default 75% threshold",table(["STUDENT","ROLL NO.","ATTENDANCE","RECORDS","STATUS"],lowRows,"No shortage records","No students currently fall below the threshold based on available records."))
       +panel("Course & faculty monitoring","Attendance coverage by assigned class subject",table(["CLASS","SUBJECT","FACULTY","ENTRIES","PRESENT RATE"],courseRows,"No course assignments","Ask an administrator to assign class subjects and faculty."));
@@ -824,6 +830,22 @@
     } catch(err) { console.error(err);toast(err.message||"Something went wrong.","error"); }
   });
   document.addEventListener("submit",async ev=>{
+    if(ev.target.id==="hod-course-subject-form"){
+      ev.preventDefault();
+      if(state.profile.institutional_role!=="hod"){toast("Only the assigned HOD can add course subjects.","error");return;}
+      const fd=new FormData(ev.target);
+      const courseId=String(fd.get("course_id")||"");
+      const subjectName=String(fd.get("subject_name")||"").trim();
+      const subjectCode=String(fd.get("subject_code")||"").trim().toUpperCase();
+      const semester=Number(fd.get("semester")||1);
+      const btn=ev.target.querySelector('button[type="submit"]');
+      if(btn){btn.disabled=true;btn.textContent="Adding…";}
+      const {error}=await sb.rpc("hod_add_course_subject",{p_course_id:courseId,p_subject_name:subjectName,p_subject_code:subjectCode,p_semester:semester});
+      if(error){toast(error.message,"error");if(btn){btn.disabled=false;btn.textContent="Add subject to course";}return;}
+      toast("Subject added to the selected course and semester.");
+      await renderHodDashboard();
+      return;
+    }
     if(ev.target.id!=="hod-course-form")return;
     ev.preventDefault();
     if(state.profile.institutional_role!=="hod"){toast("Only the assigned HOD can create department courses.","error");return;}
