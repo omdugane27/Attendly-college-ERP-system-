@@ -679,7 +679,14 @@
         toast(result.mode==="anonymized"?"Account anonymized; historical records retained.":"Account deleted.");await refreshAndRender();
       } else if(action==="create-teacher") {
         if(state.profile.role!=="admin")throw new Error("Only Admin can create teacher accounts.");
-        showModal("Create Teacher account","ADMINISTRATION",`<form id="create-teacher-form" class="form-grid">
+        showModal("Create Teacher account","ADMINISTRATION",`<style>
+.attendly-account-form{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important;width:100%!important;align-items:start!important}
+.attendly-account-form>label{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important;min-width:0!important;margin:0!important;font-size:13px!important;font-weight:650!important;line-height:1.4!important;color:#40516b!important;white-space:normal!important}
+.attendly-account-form>label input{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;min-height:44px!important;box-sizing:border-box!important;margin:0!important;padding:11px 12px!important;border:1px solid #d8e2ef!important;border-radius:10px!important;background:#fff!important;color:#20324d!important;font:400 14px/1.4 system-ui,sans-serif!important}
+.attendly-account-form>label input:focus{outline:none!important;border-color:#4f83f5!important;box-shadow:0 0 0 3px #4f83f522!important}
+.attendly-account-form>.form-actions{grid-column:1/-1!important;display:flex!important;justify-content:flex-end!important;gap:10px!important;flex-wrap:wrap!important;border-top:1px solid #edf1f7!important;padding-top:16px!important;margin-top:5px!important}
+@media(max-width:600px){.attendly-account-form{grid-template-columns:minmax(0,1fr)!important;gap:14px!important}.attendly-account-form>.form-actions{grid-column:1!important;position:sticky!important;bottom:0!important;background:#fff!important;padding:12px 0 4px!important}.attendly-account-form>.form-actions .button{flex:1!important;min-width:0!important}}
+</style><form id="create-teacher-form" class="form-grid attendly-account-form" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;width:100%">
           <label>Full name<input id="teacher-full-name" required maxlength="100" placeholder="Teacher full name"></label>
           <label>Email address<input id="teacher-email" type="email" required placeholder="teacher@college.edu"></label>
           <label>Temporary password<input id="teacher-password" type="password" required minlength="10" autocomplete="new-password" placeholder="At least 10 characters"></label>
@@ -694,7 +701,14 @@
         });
       } else if(action==="create-hod") {
         if(state.profile.role!=="admin")throw new Error("Only an administrator can create a HOD account.");
-        showModal("Create HOD account","ADMINISTRATION",`<form id="create-hod-form" class="form-grid">
+        showModal("Create HOD account","ADMINISTRATION",`<style>
+.attendly-account-form{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important;width:100%!important;align-items:start!important}
+.attendly-account-form>label{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important;min-width:0!important;margin:0!important;font-size:13px!important;font-weight:650!important;line-height:1.4!important;color:#40516b!important;white-space:normal!important}
+.attendly-account-form>label input{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;min-height:44px!important;box-sizing:border-box!important;margin:0!important;padding:11px 12px!important;border:1px solid #d8e2ef!important;border-radius:10px!important;background:#fff!important;color:#20324d!important;font:400 14px/1.4 system-ui,sans-serif!important}
+.attendly-account-form>label input:focus{outline:none!important;border-color:#4f83f5!important;box-shadow:0 0 0 3px #4f83f522!important}
+.attendly-account-form>.form-actions{grid-column:1/-1!important;display:flex!important;justify-content:flex-end!important;gap:10px!important;flex-wrap:wrap!important;border-top:1px solid #edf1f7!important;padding-top:16px!important;margin-top:5px!important}
+@media(max-width:600px){.attendly-account-form{grid-template-columns:minmax(0,1fr)!important;gap:14px!important}.attendly-account-form>.form-actions{grid-column:1!important;position:sticky!important;bottom:0!important;background:#fff!important;padding:12px 0 4px!important}.attendly-account-form>.form-actions .button{flex:1!important;min-width:0!important}}
+</style><form id="create-hod-form" class="form-grid attendly-account-form" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;width:100%">
           <label>Full name<input id="hod-full-name" required maxlength="100" placeholder="HOD full name"></label>
           <label>Email address<input id="hod-email" type="email" required placeholder="hod@college.edu"></label>
           <label>Temporary password<input id="hod-password" type="password" required minlength="10" autocomplete="new-password" placeholder="At least 10 characters"></label>
