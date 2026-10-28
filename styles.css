@@ -168,21 +168,16 @@ html[data-theme="dark"] #page-content input:not([type=checkbox]):not([type=radio
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
 
-
-
-
-
-/* Login inputs: restore the original white fields. */
-#auth-screen .auth-form-wrap #auth-email,
-#auth-screen .auth-form-wrap #auth-password {
-  background-color: #ffffff !important;
+/* Only requested change: white email and password fields on login. */
+#auth-screen #auth-email,
+#auth-screen #auth-password {
+  background: #fff !important;
   color: #1f2937 !important;
-  border: 1px solid #dbe2ed !important;
   -webkit-text-fill-color: #1f2937 !important;
   opacity: 1 !important;
 }
-#auth-screen .auth-form-wrap #auth-email::placeholder,
-#auth-screen .auth-form-wrap #auth-password::placeholder {
+#auth-screen #auth-email::placeholder,
+#auth-screen #auth-password::placeholder {
   color: #64748b !important;
   opacity: 1 !important;
 }
