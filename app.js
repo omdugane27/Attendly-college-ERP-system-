@@ -329,7 +329,7 @@
     const recordsPanel=panel("Overall attendance records","All attendance records available to your role",table(["DATE","STUDENT","CLASS · SUBJECT","STATUS"],allRecords.slice(0,100).map(r=>`<tr><td>${fmtDate(r.attendance_date)}</td><td>${escapeHtml(personName(r.student_id))}</td><td>${escapeHtml(assignedClassSubject(r.class_subject_id))}</td><td>${badge(r.status)}</td></tr>`),"No attendance records yet","Records appear here after a teacher records attendance."));
     const isHod=state.profile?.institutional_role==="hod"||state.profile?.role==="hod";
     const isTeachingStaff=p=>p.role==="teacher"&&!["hod","admin"].includes(String(p.institutional_role||"").toLowerCase());
-    const staffOptions=state.cache.people.filter(p=>p.is_active!==false&&(isHod?isTeachingStaff(p):(isTeachingStaff(p)||p.institutional_role==="staff"||p.institutional_role==="hod"||p.role==="hod"))).map(p=>({value:p.id,label:(p.full_name||p.email)+" · "+(String(p.institutional_role||"").toLowerCase()==="staff"?"Staff":p.institutional_role==="hod"||p.role==="hod"?"HOD":"Teacher")}));
+    const staffOptions=state.cache.people.filter(p=>p.is_active!==false&&(isHod?isTeachingStaff(p):(isTeachingStaff(p)||p.institutional_role==="hod"||p.role==="hod"))).map(p=>({value:p.id,label:(p.full_name||p.email)+" · "+(String(p.institutional_role||"").toLowerCase()==="staff"?"Staff":p.institutional_role==="hod"||p.role==="hod"?"HOD":"Teacher")}));
     const staffPanel=(role==="admin"||isHod)?panel(isHod?"Teacher & staff attendance":"Teacher, staff & HOD attendance",isHod?"Mark attendance only for active teachers and staff in your institution. HOD/Admin accounts are excluded.":"Admin can record daily attendance for active teachers, staff and HODs.",`<div class="filters">${select("staff-attendance-person",isHod?"Teacher / Staff":"Teacher / Staff / HOD",staffOptions,"Choose staff member")}${field("staff-attendance-date","Date","date","",true,today())}${select("staff-attendance-status","Status",[{value:"present",label:"Present"},{value:"absent",label:"Absent"},{value:"late",label:"Late"},{value:"leave",label:"Leave"},{value:"half_day",label:"Half day"}],"Choose status")}<input id="staff-attendance-note" maxlength="500" placeholder="Optional note"><button class="button button-primary" data-action="save-staff-attendance">Save staff attendance</button></div><div id="staff-attendance-recent">${empty("Loading staff attendance","Fetching recent teacher and staff attendance records.","◷")}</div>`):"";
     if(!canTakeStudentAttendance) {
       $("page-content").innerHTML=staffPanel+recordsPanel;
@@ -357,8 +357,8 @@
     const isTeachingStaff=p=>p&&p.role==="teacher"&&!["hod","admin"].includes(String(p.institutional_role||"").toLowerCase());
     if(attendance_date>today())throw new Error("Attendance cannot be recorded for a future date.");
     if(!staff||staff.is_active===false)throw new Error("Choose an active staff account.");
-    if(isHod&&!isTeachingStaff(staff)&&String(staff.institutional_role||"").toLowerCase()!=="staff")throw new Error("HOD can record attendance only for teachers and staff, not HOD/Admin accounts.");
-    if(!isHod&&!(isTeachingStaff(staff)||staff.institutional_role==="staff"||staff.institutional_role==="hod"||staff.role==="hod"))throw new Error("Choose an active Teacher, Staff or HOD account.");
+    if(isHod&&!isTeachingStaff(staff))throw new Error("HOD can record attendance only for teachers and staff in the same department, not HOD/Admin accounts.");
+    if(!isHod&&!(isTeachingStaff(staff)||staff.institutional_role==="hod"||staff.role==="hod"))throw new Error("Choose an active Teacher, Staff or HOD account.");
     const {error}=await sb.from("staff_attendance_records").upsert({staff_id,attendance_date,status,notes,marked_by:state.user.id},{onConflict:"staff_id,attendance_date"});
     if(error)throw error;
     toast("Staff attendance saved.");await loadRecentStaffAttendance();
