@@ -355,7 +355,7 @@
     const staff_id=$("staff-attendance-person")?.value,attendance_date=$("staff-attendance-date")?.value,status=$("staff-attendance-status")?.value,notes=$("staff-attendance-note")?.value.trim()||null;
     if(!staff_id||!attendance_date||!status)throw new Error("Choose staff member, date and attendance status.");
     const staff=state.cache.people.find(p=>p.id===staff_id);
-    const isTeachingStaff=p=>p&&p.role==="teacher"&&!["hod","admin"].includes(String(p.institutional_role||"").toLowerCase());
+    const isTeachingStaff=p=>p&&p.role==="teacher"&&!["hod","admin","system_admin"].includes(String(p.institutional_role||"").toLowerCase());
     if(attendance_date>today())throw new Error("Attendance cannot be recorded for a future date.");
     if(!staff||staff.is_active===false)throw new Error("Choose an active staff account.");
     if(isHod&&!isTeachingStaff(staff))throw new Error("HOD can record attendance only for teachers and staff in the same department, not HOD/Admin accounts.");
