@@ -184,3 +184,40 @@ html[data-theme="dark"] #page-content input:not([type=checkbox]):not([type=radio
   #auth-screen .auth-form-panel { padding:20px 14px !important; }
   #auth-screen .auth-mobile-brand { margin-bottom:22px !important; }
 }
+
+
+/* Responsive fix for Android browsers reporting a wider CSS viewport */
+@media screen and (max-width: 1000px), screen and (max-device-width: 1000px) {
+  #auth-screen.auth-screen {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+  }
+  #auth-screen.auth-screen > .auth-brand-panel {
+    display: none !important;
+  }
+  #auth-screen.auth-screen > .auth-form-panel {
+    display: flex !important;
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    padding: 24px 18px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+  #auth-screen .auth-form-wrap {
+    width: 100% !important;
+    max-width: 430px !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+  }
+  #auth-screen .auth-mobile-brand {
+    display: flex !important;
+    margin-bottom: 24px !important;
+  }
+}
