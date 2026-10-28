@@ -120,8 +120,10 @@
     $("side-name").textContent=display;$("side-role").textContent=displayRole;$("side-avatar").textContent=initials(display);$("top-name").textContent=display;$("top-role").textContent=displayRole;$("top-avatar").textContent=initials(display);dateLabel();
     document.querySelectorAll(".admin-only").forEach(el=>el.classList.toggle("hidden",p.role!=="admin"));
     document.querySelectorAll(".hod-only").forEach(el=>el.classList.toggle("hidden",p.institutional_role!=="hod"));
-    document.querySelectorAll(".student-only").forEach(el=>el.classList.toggle("hidden",p.role!=="student"));
-    document.querySelectorAll(".certificate-review-only").forEach(el=>el.classList.toggle("hidden",!(p.role==="admin"||p.institutional_role==="hod")));
+    const role=String(p.role||"").trim().toLowerCase();
+    const institutionalRole=String(p.institutional_role||"").trim().toLowerCase();
+    document.querySelectorAll(".student-only").forEach(el=>el.classList.toggle("hidden",role!=="student"));
+    document.querySelectorAll(".certificate-review-only").forEach(el=>el.classList.toggle("hidden",!(role==="admin"||institutionalRole==="hod")));
     // Role-specific workspace navigation: admin gets institution modules; teachers and students get their own views.
     document.querySelectorAll(".nav-item[data-view]").forEach(el=>{
       const view=el.dataset.view;
