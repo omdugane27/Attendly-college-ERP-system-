@@ -169,7 +169,7 @@ html[data-theme="dark"] #page-content input:not([type=checkbox]):not([type=radio
 
 
 /* Mobile login layout hotfix */
-@media screen and (max-width: 680px) {
+@media screen and (max-width: 680px), screen and (max-device-width: 680px), screen and (pointer: coarse) {
   html, body { width: 100%; min-width: 0; }
   #auth-screen.auth-screen { display:grid !important; grid-template-columns:minmax(0,1fr) !important; min-height:100svh; width:100%; }
   #auth-screen .auth-brand-panel { display:none !important; }
@@ -180,7 +180,7 @@ html[data-theme="dark"] #page-content input:not([type=checkbox]):not([type=radio
   #auth-screen .auth-form-heading h2 { font-size:clamp(25px,7vw,30px); }
   #auth-screen .auth-form-wrap input { box-sizing:border-box; min-width:0; width:100%; }
 }
-@media screen and (max-width: 380px) {
+@media screen and (max-width: 380px), screen and (max-device-width: 380px) {
   #auth-screen .auth-form-panel { padding:20px 14px !important; }
   #auth-screen .auth-mobile-brand { margin-bottom:22px !important; }
 }
