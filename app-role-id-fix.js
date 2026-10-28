@@ -248,6 +248,54 @@
     const rows=studentArchives.map(p=>`<tr><td>${escapeHtml(p.original_name||"Name unavailable")}</td><td>Student</td></tr>`);
     $("page-content").innerHTML=panel("Deleted accounts","Historical attendance and academic records are not deleted by this view.",table(["NAME","ROLE"],rows,"No archived accounts","Accounts appear here after an administrator archives them."));
   }
+  const CERTIFICATE_TYPES = ["General Certificate","Bonafide Certificate","Railway Concession"];
+  async function renderServices() {
+    if(state.profile?.role!=="student"){setView("overview");return;}
+    setHeading("Services","Apply for college certificates and track both required approvals.","STUDENT SERVICES");
+    const {data,error}=await sb.from("certificate_requests").select("*").eq("student_id",state.user.id).order("created_at",{ascending:false});
+    if(error) throw error;
+    const rows=(data||[]).map(r=>`<tr><td><strong>${escapeHtml(r.certificate_type)}</strong><small>${escapeHtml(r.purpose||"No purpose supplied")}</small></td><td>${fmtDate(String(r.created_at||"").slice(0,10))}</td><td>${badge(r.status)}${r.status==="approved"&&r.pdf_status!=="ready"?`<br><small>${r.pdf_status==="failed"?"PDF generation failed":"PDF generating…"}</small>`:""}</td><td>${r.hod_approved?"✓ Approved":"Pending"}<br><small>HOD</small></td><td>${r.admin_approved?"✓ Approved":"Pending"}<br><small>Admin</small></td><td>${r.status==="approved"&&r.pdf_status==="ready"?'<button class="button button-primary button-small" data-action="download-certificate" data-id="'+r.id+'">Download PDF</button>':r.status==="approved"?'<button class="button button-secondary button-small" data-action="refresh-certificates">Refresh status</button>':"—"}</td></tr>`).join("");
+    const cards=CERTIFICATE_TYPES.map((t,i)=>`<button class="service-card" data-action="new-certificate-request" data-type="${escapeHtml(t)}"><span class="service-icon">${["✓","▣","🚆"][i]}</span><strong>${escapeHtml(t)}</strong><small>Apply now →</small></button>`).join("");
+    $("page-content").innerHTML=`<div class="service-grid">${cards}</div>${panel("My certificate requests","Your certificate becomes downloadable after HOD and Admin both approve it.",`<div class="table-wrap"><table><thead><tr><th>SERVICE / PURPOSE</th><th>REQUESTED</th><th>STATUS</th><th>HOD</th><th>ADMIN</th><th>DOCUMENT</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="empty-state">No certificate requests yet. Choose a service above to apply.</td></tr>'}</tbody></table></div>`) }`;
+  }
+  async function renderCertificateRequests() {
+    if(!(state.profile?.role==="admin"||state.profile?.institutional_role==="hod")){setView("overview");return;}
+    setHeading("Certificate Requests","Review student requests. HOD and Admin approvals are recorded separately.","CERTIFICATE APPROVALS");
+    const {data,error}=await sb.from("certificate_requests").select("*,student:profiles!certificate_requests_student_id_fkey(full_name,email,student_number,department,course_name,semester)").order("created_at",{ascending:false});
+    if(error) throw error;
+    const rows=(data||[]).map(r=>{
+      const p=r.student||{};
+      const own=state.profile.role==="admin"?"admin":"hod";
+      const approved=own==="admin"?r.admin_approved:r.hod_approved;
+      const canReview=r.status==="pending"&&!approved;
+      return `<tr><td><strong>${escapeHtml(p.full_name||p.email||"Student")}</strong><small>${escapeHtml(p.student_number||"")}</small></td><td>${escapeHtml(p.department||"—")}<small>${escapeHtml(p.course_name||"")}</small></td><td><strong>${escapeHtml(r.certificate_type)}</strong><small>${escapeHtml(r.purpose||"—")}</small></td><td>${fmtDate(String(r.created_at||"").slice(0,10))}</td><td>${r.hod_approved?"Approved":"Pending"}</td><td>${r.admin_approved?"Approved":"Pending"}</td><td>${badge(r.status)}${r.rejection_reason?'<small>'+escapeHtml(r.rejection_reason)+'</small>':""}</td><td>${canReview?`<button class="button button-primary button-small" data-action="approve-certificate" data-id="${r.id}">Approve</button> <button class="button button-outline button-small" data-action="reject-certificate" data-id="${r.id}">Reject</button>`:r.status==="approved"?(r.pdf_status==="ready"?'<span class="text-muted">PDF ready</span>':r.pdf_status==="failed"?'<span class="text-muted">PDF failed</span>':'<span class="text-muted">PDF generating…</span>'):approved?"Approved by you":"—"}</td></tr>`;
+    }).join("");
+    $("page-content").innerHTML=panel("All certificate requests","Approving here records only your role's approval. The PDF is generated when both approvals are complete.",`<div class="table-wrap"><table><thead><tr><th>STUDENT</th><th>DEPARTMENT / COURSE</th><th>SERVICE / PURPOSE</th><th>REQUESTED</th><th>HOD</th><th>ADMIN</th><th>STATUS</th><th>YOUR ACTION</th></tr></thead><tbody>${rows||'<tr><td colspan="8" class="empty-state">No student certificate requests have been submitted.</td></tr>'}</tbody></table></div>`);
+  }
+  function openCertificateRequest(type) {
+    if(state.profile?.role!=="student"||!CERTIFICATE_TYPES.includes(type)) throw new Error("Only students can apply for an available certificate service.");
+    showModal("Apply for "+type,"STUDENT SERVICES",`<form class="certificate-request-form"><div class="certificate-request-summary"><span class="certificate-request-icon">${type==="General Certificate"?"✓":type==="Bonafide Certificate"?"✦":"▣"}</span><div><span class="certificate-summary-label">SELECTED SERVICE</span><strong>${escapeHtml(type)}</strong><small>College student service request</small></div></div><label class="certificate-purpose-field" for="certificate-purpose"><span>Purpose of request</span><small>Tell us where you need this certificate and why.</small><textarea id="certificate-purpose" maxlength="1000" rows="4" placeholder="Example: I need this certificate for scholarship / railway concession / official verification." required></textarea><small class="certificate-character-hint">Please provide a clear reason (up to 1,000 characters).</small></label><div class="certificate-approval-note"><span aria-hidden="true">ⓘ</span><p>Your request will be reviewed separately by your HOD and Admin. The PDF download becomes available after both approvals.</p></div><div class="form-actions certificate-form-actions"><button type="button" class="button button-outline" data-action="close-modal">Cancel</button><button type="submit" class="button button-primary">Submit request <span aria-hidden="true">→</span></button></div></form>`,async()=>{
+      const purpose=$("certificate-purpose").value.trim();
+      if(!purpose) throw new Error("Enter the purpose for this certificate.");
+      const {error}=await sb.from("certificate_requests").insert({student_id:state.user.id,certificate_type:type,purpose});
+      if(error) throw error;
+      toast("Certificate request submitted.");
+      await renderServices();
+    });
+  }
+  async function downloadCertificate(id) {
+    if(state.profile?.role!=="student") throw new Error("Only the owning student can download the certificate.");
+    const {data:r,error}=await sb.from("certificate_requests").select("id,student_id,status,hod_approved,admin_approved,pdf_status").eq("id",id).eq("student_id",state.user.id).single();
+    if(error) throw error;
+    if(r.status!=="approved"||!r.hod_approved||!r.admin_approved) throw new Error("Certificate is available only after HOD and Admin approval.");
+    if(r.pdf_status!=="ready") throw new Error("Your certificate PDF is still being generated. Refresh the status in a few seconds.");
+    const {data,error:fnError}=await sb.functions.invoke("certificate-pdf",{body:{action:"signed-url",request_id:id}});
+    if(fnError) throw fnError;
+    if(!data?.url) throw new Error(data?.error||"Secure download link could not be created.");
+    window.open(data.url,"_blank","noopener,noreferrer");
+  }
+
+
   async function renderView() {
     alertBox("");
     switch(state.view) {
@@ -260,6 +308,8 @@
       case "governance": return renderGovernance();
       case "deleted-accounts": return renderDeletedAccounts();
       case "hod": return renderHodDashboard();
+      case "services": return renderServices();
+      case "certificate-requests": return renderCertificateRequests();
       default: return renderOverview();
     }
   }
