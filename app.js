@@ -124,10 +124,10 @@
     document.querySelectorAll(".nav-item[data-view]").forEach(el=>{
       const view=el.dataset.view;
       const allowed=p.role==="admin"
-        ? ["overview","attendance","people","deleted-accounts","academics","governance","reports"].includes(view)
+        ? ["overview","attendance","people","deleted-accounts","academics","governance","reports","complaints"].includes(view)
         : p.institutional_role==="hod" && view==="hod"
           ? true
-          : (p.role==="teacher" || p.role==="student") && ["overview","attendance","reports"].includes(view);
+          : (p.role==="teacher" || p.role==="student") && ["overview","attendance","reports","complaints"].includes(view);
       el.classList.toggle("hidden",!allowed);
     });
     showApp();
@@ -256,11 +256,29 @@
       case "people": return renderPeople();
       case "academics": return renderAcademics();
       case "reports": return renderReports();
+      case "complaints": return renderComplaints();
       case "governance": return renderGovernance();
       case "deleted-accounts": return renderDeletedAccounts();
       case "hod": return renderHodDashboard();
       default: return renderOverview();
     }
+  }
+  async function renderComplaints(){
+    const isAdmin=state.profile?.role==="admin";
+    setHeading("Complaint inbox",isAdmin?"Review complaints from students and staff, and track resolutions.":"Submit a complaint and follow its status.","STUDENT & STAFF SUPPORT");
+    const form=panel("Submit a complaint","Describe the issue clearly. Admin can see your name and role.", '<form id="complaint-form" class="form-grid"><div class="field"><label for="complaint-subject">Subject</label><input id="complaint-subject" maxlength="160" required minlength="3" placeholder="Short summary of the issue"></div><div class="field"><label for="complaint-category">Category</label><select id="complaint-category" required><option>General</option><option>Attendance</option><option>Account/Login</option><option>Profile</option><option>Fees</option><option>Technical issue</option><option>Harassment/Safety</option><option>Other</option></select></div><div class="field"><label for="complaint-priority">Priority</label><select id="complaint-priority"><option value="normal">Normal</option><option value="low">Low</option><option value="high">High</option><option value="urgent">Urgent</option></select></div><div class="field" style="grid-column:1/-1"><label for="complaint-description">Description</label><textarea id="complaint-description" required minlength="5" maxlength="5000" rows="4" placeholder="Explain what happened and what help you need"></textarea></div><div><button class="button button-primary" type="submit">Submit complaint</button></div></form>');
+    const result=await sb.from("complaints").select("id,sender_id,subject,category,description,priority,status,admin_response,created_at,updated_at").order("created_at",{ascending:false}).limit(300);
+    if(result.error)throw result.error;
+    const people=state.cache.people||[];
+    const rows=(result.data||[]).map(r=>{
+      const p=people.find(x=>String(x.id)===String(r.sender_id));
+      const who=p?((p.full_name||p.email||"Account")+" · "+(p.institutional_role==="hod"||p.role==="hod"?"HOD":p.role==="admin"?"Admin":p.role==="teacher"?"Teacher":"Student")):(String(r.sender_id)===String(state.user.id)?(state.profile.full_name||state.user.email)+" · You":"Account");
+      const statusControl=isAdmin?'<select data-action="complaint-status" data-id="'+escapeHtml(r.id)+'" aria-label="Complaint status"><option value="open" '+(r.status==="open"?"selected":"")+ '>Open</option><option value="in_progress" '+(r.status==="in_progress"?"selected":"")+ '>In progress</option><option value="resolved" '+(r.status==="resolved"?"selected":"")+ '>Resolved</option><option value="rejected" '+(r.status==="rejected"?"selected":"")+ '>Rejected</option></select>':badge(r.status);
+      const response=isAdmin?'<div class="field"><label>Admin response</label><textarea data-response-for="'+escapeHtml(r.id)+'" rows="2" maxlength="2000" placeholder="Reply to the sender">'+escapeHtml(r.admin_response||"")+'</textarea><button class="button button-secondary" data-action="complaint-reply" data-id="'+escapeHtml(r.id)+'" type="button">Save response</button></div>':(r.admin_response?'<p><strong>Admin response:</strong> '+escapeHtml(r.admin_response)+'</p>':"");
+      return '<tr><td>'+fmtDate(String(r.created_at||"").slice(0,10))+'</td><td><strong>'+escapeHtml(r.subject)+'</strong><small style="display:block">'+escapeHtml(r.category)+' · '+escapeHtml(r.priority)+'</small><p>'+escapeHtml(r.description)+'</p>'+response+'</td><td>'+escapeHtml(who)+'</td><td>'+statusControl+'</td></tr>';
+    });
+    $("page-content").innerHTML=form+panel(isAdmin?"All complaints":"My complaints",isAdmin?"All submissions show the sender identity, role, description and response controls.":"Only your submitted complaints are visible to your account.",table(["DATE","COMPLAINT","SUBMITTED BY","STATUS"],rows,"No complaints yet","Submitted complaints will appear here."));
+    $("complaint-form")?.addEventListener("submit",async ev=>{ev.preventDefault();const btn=ev.target.querySelector('button[type="submit"]');if(btn){btn.disabled=true;btn.textContent="Submitting…";}try{const payload={sender_id:state.user.id,subject:$("complaint-subject").value.trim(),category:$("complaint-category").value,description:$("complaint-description").value.trim(),priority:$("complaint-priority").value};const {error}=await sb.from("complaints").insert(payload);if(error)throw error;toast("Complaint submitted to Admin.");await renderComplaints();}catch(e){toast(e.message||"Could not submit complaint.","error");if(btn){btn.disabled=false;btn.textContent="Submit complaint";}}});
   }
   function recentRows(records, showName=true) {
     return records.slice(0,7).map(r=>{
@@ -696,6 +714,7 @@
     const target=ev.target.closest("[data-action]");if(!target){const node=ev.target.closest("td, .student-cell, .avatar, strong, small, span");if(node){const label=String(node.textContent||"").trim();if(label){const matches=state.cache.people.filter(p=>[p.full_name,p.email,p.student_number,p.staff_number].some(v=>v&&String(v).trim().toLowerCase()===label.toLowerCase()));if(matches.length===1){showPersonProfile(matches[0]);return;}}}return;}
     const action=target.dataset.action;
     try {
+      if(action==="complaint-reply"){if(state.profile?.role!=="admin")throw new Error("Only Admin can reply to complaints.");const response=document.querySelector('[data-response-for="'+target.dataset.id+'"]')?.value.trim()||null;const {error}=await sb.from("complaints").update({admin_response:response,updated_at:new Date().toISOString()}).eq("id",target.dataset.id);if(error)throw error;toast("Admin response saved.");await renderComplaints();return;}
       if(action==="close-profile-modal"){document.getElementById("modal")?.close();return;}
       if(action==="view-profile"){const p=state.cache.people.find(x=>String(x.id)===String(target.dataset.userId));if(!p)throw new Error("Profile details are not available to your account.");showPersonProfile(p);return;}
       if(action==="admin-profile-photo-upload") {
@@ -977,6 +996,7 @@
     await renderHodDashboard();
   });
   document.addEventListener("change",async ev=>{
+    if(ev.target.matches('[data-action="complaint-status"]')){try{if(state.profile?.role!=="admin")throw new Error("Only Admin can update complaint status.");const {error}=await sb.from("complaints").update({status:ev.target.value,updated_at:new Date().toISOString()}).eq("id",ev.target.dataset.id);if(error)throw error;toast("Complaint status updated.");}catch(e){toast(e.message||"Could not update complaint.","error");}return;}
     const el=ev.target;
     if(el.matches('[data-action="change-role"]')) {
       const id=el.dataset.userId,role=el.value;
