@@ -642,9 +642,9 @@
           const path=userId+"/profile-"+Date.now()+"."+ext;
           const uploaded=await sb.storage.from("student-photos").upload(path,file,{upsert:false,contentType:file.type});
           if(uploaded.error)throw uploaded.error;
-          const {error}=await sb.from("profiles").update({profile_photo_path:path}).eq("id",userId);
-          if(error){await sb.storage.from("student-photos").remove([path]);throw error;}
-          toast("Profile photo updated.");await refreshAndRender();
+          const saved=await sb.from("profiles").update({profile_photo_path:path}).eq("id",userId).select("id,profile_photo_path").maybeSingle();
+          if(saved.error || !saved.data?.profile_photo_path){await sb.storage.from("student-photos").remove([path]);throw saved.error || new Error("Photo uploaded, but the profile photo path was not saved.");}
+          toast("Profile photo uploaded and saved.");await refreshAndRender();
           const person=state.cache.people.find(p=>p.id===userId);if(person)await showPersonProfile(person);
         } finally {target.disabled=false;target.textContent="Upload / change photo";}
       }
@@ -712,10 +712,13 @@
           const path=state.user.id+"/profile-"+Date.now()+"."+ext;
           const uploaded=await sb.storage.from("student-photos").upload(path,file,{upsert:false,contentType:file.type});
           if(uploaded.error)throw uploaded.error;
-          const updated=await sb.from("profiles").update({profile_photo_path:path}).eq("id",state.user.id);
-          if(updated.error){await sb.storage.from("student-photos").remove([path]);throw updated.error;}
-          state.profile.profile_photo_path=path;
-          toast("Profile photo uploaded.");
+          const updated=await sb.from("profiles").update({profile_photo_path:path}).eq("id",state.user.id).select("id,profile_photo_path").maybeSingle();
+          if(updated.error || !updated.data?.profile_photo_path){
+            await sb.storage.from("student-photos").remove([path]);
+            throw updated.error || new Error("Photo uploaded, but Supabase did not save the photo path to your profile. Sign out, sign in again, and retry.");
+          }
+          state.profile.profile_photo_path=updated.data.profile_photo_path;
+          toast("Profile photo uploaded and saved. Admin can refresh People → Students.");
           await loadCache();await renderView();
         } finally {target.disabled=false;target.textContent="Upload profile photo";}
       }
