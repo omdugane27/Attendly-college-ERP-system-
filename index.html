@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#111827">
   <meta name="description" content="Attendly student attendance management">
   <title>Attendly — Attendance Management</title>
-  <link rel="stylesheet" href="./styles.css?v=certificate-font-nav-fix-20261029-02">
+  <link rel="stylesheet" href="./styles.css?v=serif-dashboard-20261029-01">
   <style>
   #signup-fields.signup-grid{display:grid;grid-template-columns:1fr;gap:7px;margin:14px 0}
   #signup-fields.signup-grid label{font-size:12px;font-weight:650;color:#475569;margin-top:4px}
@@ -68,7 +68,8 @@
       <div class="workspace-label">WORKSPACE</div>
       <nav class="main-nav" aria-label="Main navigation">
                 <button class="nav-item student-only" data-view="services"><span class="nav-icon">▤</span> Certificate Services</button>
-        <button class="nav-item certificate-review-only hidden" data-view="certificate-requests"><span class="nav-icon">▣</span> Certificate Requests</button>
+        <button class="nav-item hod-only" data-view="certificate-requests-hod"><span class="nav-icon">▣</span> HOD Certificate Approvals</button>
+        <button class="nav-item admin-only" data-view="certificate-requests-admin"><span class="nav-icon">▣</span> Admin Certificate Approvals</button>
 <button class="nav-item active" data-view="overview"><span class="nav-icon">▦</span> Overview</button>
         <button class="nav-item" data-view="attendance"><span class="nav-icon">◷</span> Attendance</button>
         <button class="nav-item hod-only" data-view="hod"><span class="nav-icon">▥</span> HOD Dashboard</button>
@@ -95,6 +96,6 @@
     </main>
   </div>
   <dialog id="modal" class="modal"><div class="modal-head"><div><div id="modal-eyebrow" class="eyebrow">WORKSPACE</div><h2 id="modal-title">Add new</h2></div><button id="modal-close" class="icon-button" aria-label="Close dialog">×</button></div><div id="modal-content"></div></dialog>
-  <script src="./app-role-id-fix.js?v=certificate-font-nav-fix-20261029-02"></script>
+  <script src="./app-role-id-fix.js?v=separate-cert-approvals-20261029-01"></script>
 </body>
 </html>
