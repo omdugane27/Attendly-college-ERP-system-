@@ -396,14 +396,34 @@
     const staffPanel=(role==="admin"||isHod)?panel(isHod?"Teacher & staff attendance":"Teacher, staff & HOD attendance",isHod?"Mark attendance only for active teachers and staff in your institution. HOD/Admin accounts are excluded.":"Admin can record daily attendance for active teachers, staff and HODs.",`<div class="filters">${select("staff-attendance-person",isHod?"Teacher / Staff":"Teacher / Staff / HOD",staffOptions,"Choose staff member")}${field("staff-attendance-date","Date","date","",true,today())}${select("staff-attendance-status","Status",[{value:"present",label:"Present"},{value:"absent",label:"Absent"},{value:"late",label:"Late"},{value:"leave",label:"Leave"},{value:"half_day",label:"Half day"}],"Choose status")}<input id="staff-attendance-note" maxlength="500" placeholder="Optional note"><button class="button button-primary" data-action="save-staff-attendance">Save staff attendance</button></div><div id="staff-attendance-recent">${empty("Loading staff attendance","Fetching recent teacher and staff attendance records.","◷")}</div>`):"";
     if(!canTakeStudentAttendance) {
       $("page-content").innerHTML=isHod?staffPanel:staffPanel+(role==="admin"?adminOverallPanel:recordsPanel);
-      if(role==="admin"){loadRecentStaffAttendance().catch(e=>{const el=$("staff-attendance-recent");if(el)el.innerHTML=`<div class="alert alert-error">${escapeHtml(e.message)}</div>`;});loadAdminRegisterAttendance().catch(e=>{const el=$("register-admin-results");if(el)el.innerHTML='<div class="alert alert-error">'+escapeHtml(e.message||"Could not load attendance.")+'</div>';});}
-      else if(isHod) loadRecentStaffAttendance().catch(e=>{const el=$("staff-attendance-recent");if(el)el.innerHTML=`<div class="alert alert-error">${escapeHtml(e.message)}</div>`;});
+      if(role==="admin"||isHod){populateStaffAttendanceMembers().catch(e=>{const el=$("staff-attendance-person");if(el)el.innerHTML='<option value="">Could not load members</option>';toast("Could not load staff members: "+(e.message||"Check profiles access."),"error");});loadRecentStaffAttendance().catch(e=>{const el=$("staff-attendance-recent");if(el)el.innerHTML=`<div class="alert alert-error">${escapeHtml(e.message)}</div>`;});}
+      if(role==="admin") loadAdminRegisterAttendance().catch(e=>{const el=$("register-admin-results");if(el)el.innerHTML='<div class="alert alert-error">'+escapeHtml(e.message||"Could not load attendance.")+'</div>';});
       return;
     }
     const options=state.cache.assignments.filter(a=>a.teacher_id===state.user.id).map(a=>({value:a.id,label:assignedClassSubject(a.id)}));
     const filters=`<div class="filters">${select("register-subject","Class and subject",options,"Choose a subject")}${field("register-date","Date","date","",true,today())}<button class="button button-primary" data-action="load-roster">Load students →</button></div><div id="register-area">${empty("Choose a class and subject","Load the roster to mark the students' status for a date.","♙")}</div>`;
     $("page-content").innerHTML=staffPanel+panel("Take attendance","Only assigned teachers can record student attendance. Existing records can be edited for the selected date.",filters)+panel("Recent records","Records visible to your account",table(["DATE","STUDENT","CLASS · SUBJECT","STATUS"],allRecords.slice(0,10).map(r=>`<tr><td>${fmtDate(r.attendance_date)}</td><td>${escapeHtml(personName(r.student_id))}</td><td>${escapeHtml(assignedClassSubject(r.class_subject_id))}</td><td>${badge(r.status)}</td></tr>`),"No records yet","Records will appear here when attendance is added."));
     if(role==="admin") loadRecentStaffAttendance().catch(e=>{const el=$("staff-attendance-recent");if(el)el.innerHTML=`<div class="alert alert-error">${escapeHtml(e.message)}</div>`;});
+  }
+  async function populateStaffAttendanceMembers(){
+    const el=$("staff-attendance-person");if(!el)return;
+    el.innerHTML='<option value="">Loading members…</option>';
+    const {data,error}=await sb.from("profiles").select("id,full_name,email,role,institutional_role,department,is_active").order("full_name");
+    if(error)throw error;
+    const norm=v=>String(v||"").trim().toLowerCase().replace(/\s+/g," ");
+    const normDept=v=>["bca","bachelor of computer application","bachelor of computer applications"].includes(norm(v))?"bca":norm(v);
+    const isHod=state.profile?.institutional_role==="hod"||state.profile?.role==="hod";
+    const eligible=(data||[]).filter(p=>{
+      if(p.is_active===false)return false;
+      const r=norm(p.role),ir=norm(p.institutional_role),hod=r==="hod"||ir==="hod";
+      const teacher=r==="teacher"||r==="staff"||ir==="teacher"||ir==="staff";
+      return isHod?teacher&&normDept(p.department)===normDept(state.profile?.department):(teacher||hod);
+    }).sort((a,b)=>String(a.full_name||a.email||"").localeCompare(String(b.full_name||b.email||"")));
+    el.innerHTML='<option value="">'+(eligible.length?'Choose staff member':'No active Teacher/Staff/HOD accounts found')+'</option>'+eligible.map(p=>{
+      const r=norm(p.role),ir=norm(p.institutional_role),hod=r==="hod"||ir==="hod",label=hod?"HOD":(r==="staff"||ir==="staff"?"Staff":"Teacher");
+      return '<option value="'+escapeHtml(p.id)+'">'+escapeHtml((p.full_name||p.email||"Unnamed member")+" · "+label)+'</option>';
+    }).join("");
+    if(!eligible.length)throw new Error("No eligible active members were returned from profiles. Check active teacher/HOD accounts and Admin profile access.");
   }
   async function loadRecentStaffAttendance(){
     const host=$("staff-attendance-recent");if(!host||!(state.profile?.role==="admin"||state.profile?.institutional_role==="hod"||state.profile?.role==="hod"))return;
