@@ -470,6 +470,15 @@
         await refreshAndRender();
       } catch(err) {toast(err.message||"Could not create department.","error");if(btn){btn.disabled=false;btn.textContent="Create department";}}
     });
+    Promise.all(people.filter(p=>p.profile_photo_path).map(async p=>{
+      const avatar=document.querySelector('[data-profile-avatar="'+p.id+'"]');
+      if(!avatar)return;
+      const {data,error}=await sb.storage.from("student-photos").createSignedUrl(p.profile_photo_path,300);
+      if(error||!data?.signedUrl)return;
+      avatar.innerHTML='<img src="'+data.signedUrl+'" alt="Profile photo" style="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block">';
+      avatar.style.padding="0";
+      avatar.style.overflow="hidden";
+    })).catch(err=>console.warn("Could not load profile photos for admin directory",err));
     loadProfileChangeRequests();
     $("people-search").addEventListener("input",()=>renderPeople());
     $("people-department-filter").addEventListener("change",()=>renderPeople());
