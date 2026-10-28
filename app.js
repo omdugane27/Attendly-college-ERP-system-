@@ -335,6 +335,25 @@
     requestAnimationFrame(()=>{drawBar($("trend-chart"),weekly);drawDonut($("status-chart"),counts.map(c=>({value:c.value})));});
     state.chartEvents=[()=>{drawBar($("trend-chart"),weekly);drawDonut($("status-chart"),counts.map(c=>({value:c.value})));}];
   }
+  async function loadAdminRegisterAttendance() {
+    const result=await sb.from("staff_attendance_records").select("id,staff_id,attendance_date,status,notes").order("attendance_date",{ascending:false}).limit(2000);
+    if(result.error) throw result.error;
+    const profiles=new Map((state.cache.people||[]).map(p=>[String(p.id),p]));
+    const studentRows=(state.cache.records||[]).map(r=>{const p=profiles.get(String(r.student_id));return {date:r.attendance_date,person:p?.full_name||personName(r.student_id),email:p?.email||"",role:"student",label:"Student",status:r.status,detail:assignedClassSubject(r.class_subject_id),notes:r.notes||""};});
+    const staffRows=(result.data||[]).map(r=>{const p=profiles.get(String(r.staff_id));const hod=!!p&&(p.institutional_role==="hod"||p.role==="hod");return {date:r.attendance_date,person:p?.full_name||personName(r.staff_id),email:p?.email||"",role:hod?"hod":"teacher",label:hod?"HOD":"Teacher",status:r.status,detail:"Staff attendance",notes:r.notes||""};});
+    const rows=[...studentRows,...staffRows].sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
+    const root=$("register-admin-results");if(!root)return;
+    const render=()=>{
+      const role=$("register-admin-role")?.value||"all",from=$("register-admin-from")?.value||"",to=$("register-admin-to")?.value||"";
+      const filtered=rows.filter(r=>(role==="all"||r.role===role)&&(!from||r.date>=from)&&(!to||r.date<=to));
+      const summary=$("register-admin-summary");
+      if(summary)summary.innerHTML=[["student","Student attendance"],["teacher","Teacher attendance"],["hod","HOD attendance"]].map(([key,label])=>{const rr=rows.filter(r=>r.role===key&&(!from||r.date>=from)&&(!to||r.date<=to));const attended=rr.filter(r=>["present","late","half_day"].includes(r.status)).length;return stat(label,rr.length?Math.round(attended/rr.length*100)+"%":"—",rr.length+" records","◷");}).join("");
+      root.innerHTML=table(["DATE","PERSON","ROLE","STATUS","CLASS / SOURCE","NOTES"],filtered.slice(0,300).map(r=>'<tr><td>'+fmtDate(r.date)+'</td><td><strong>'+escapeHtml(r.person)+'</strong><small style="display:block">'+escapeHtml(r.email)+'</small></td><td>'+badge(r.label.toLowerCase())+'</td><td>'+badge(r.status)+'</td><td>'+escapeHtml(r.detail)+'</td><td>'+escapeHtml(r.notes||"—")+'</td></tr>'),"No matching attendance records","Try a different role or date range. Up to 300 records are shown.");
+    };
+    ["register-admin-role","register-admin-from","register-admin-to"].forEach(id=>$(id)?.addEventListener("change",render));
+    $("register-admin-reset")?.addEventListener("click",()=>{const roleEl=$("register-admin-role");if(roleEl)roleEl.value="all";["register-admin-from","register-admin-to"].forEach(id=>{const el=$(id);if(el)el.value="";});render();});
+    render();
+  }
   async function loadAdminOverallAttendance() {
     const result=await sb.from("staff_attendance_records").select("id,staff_id,attendance_date,status,notes").order("attendance_date",{ascending:false}).limit(2000);
     if(result.error) throw result.error;
@@ -368,15 +387,17 @@
       $("page-content").innerHTML=content+panel("Attendance history","All sessions available to your account",table(["DATE","CLASS · SUBJECT","STATUS","NOTES"],rows,"No attendance recorded","Your teacher's recorded attendance will appear here."));return;
     }
     const allRecords=filteredRecords().sort((a,b)=>b.attendance_date.localeCompare(a.attendance_date));
-    const recordsPanel=panel("Overall attendance records","All attendance records available to your role",table(["DATE","STUDENT","CLASS · SUBJECT","STATUS"],allRecords.slice(0,100).map(r=>`<tr><td>${fmtDate(r.attendance_date)}</td><td>${escapeHtml(personName(r.student_id))}</td><td>${escapeHtml(assignedClassSubject(r.class_subject_id))}</td><td>${badge(r.status)}</td></tr>`),"No attendance records yet","Records appear here after a teacher records attendance."));
+    const recordsPanel=panel("Overall attendance records","All student attendance records available to your role",table(["DATE","STUDENT","CLASS · SUBJECT","STATUS"],allRecords.slice(0,100).map(r=>`<tr><td>${fmtDate(r.attendance_date)}</td><td>${escapeHtml(personName(r.student_id))}</td><td>${escapeHtml(assignedClassSubject(r.class_subject_id))}</td><td>${badge(r.status)}</td></tr>`),"No attendance records yet","Records appear here after a teacher records attendance."));
+    const adminOverallPanel=role==="admin"?panel("Overall attendance · role filters","Filter Students, Teachers and HODs separately by date.",'<div class="filters"><label>Role<select id="register-admin-role"><option value="all">All roles</option><option value="student">Students</option><option value="teacher">Teachers</option><option value="hod">HODs</option></select></label><label>From<input id="register-admin-from" type="date"></label><label>To<input id="register-admin-to" type="date"></label><button class="button button-secondary" type="button" id="register-admin-reset">Reset filters</button></div><div id="register-admin-summary" class="stats-grid"></div><div id="register-admin-results">Loading attendance…</div>'):"";
     const isHod=state.profile?.institutional_role==="hod"||state.profile?.role==="hod";
     const normalizeDepartment=value=>{const d=String(value||"").trim().toLowerCase().replace(/\\s+/g," ");return ["bca","bachelor of computer application","bachelor of computer applications"].includes(d)?"bca":d;};
     const isTeachingStaff=p=>p.role==="teacher"&&!["hod","admin","system_admin"].includes(String(p.institutional_role||"").toLowerCase());
     const staffOptions=state.cache.people.filter(p=>p.is_active!==false&&(isHod?(isTeachingStaff(p)&&normalizeDepartment(p.department)===normalizeDepartment(state.profile.department)):(isTeachingStaff(p)||p.institutional_role==="hod"||p.role==="hod"))).map(p=>({value:p.id,label:(p.full_name||p.email)+" · "+(String(p.institutional_role||"").toLowerCase()==="staff"?"Staff":p.institutional_role==="hod"||p.role==="hod"?"HOD":"Teacher")}));
     const staffPanel=(role==="admin"||isHod)?panel(isHod?"Teacher & staff attendance":"Teacher, staff & HOD attendance",isHod?"Mark attendance only for active teachers and staff in your institution. HOD/Admin accounts are excluded.":"Admin can record daily attendance for active teachers, staff and HODs.",`<div class="filters">${select("staff-attendance-person",isHod?"Teacher / Staff":"Teacher / Staff / HOD",staffOptions,"Choose staff member")}${field("staff-attendance-date","Date","date","",true,today())}${select("staff-attendance-status","Status",[{value:"present",label:"Present"},{value:"absent",label:"Absent"},{value:"late",label:"Late"},{value:"leave",label:"Leave"},{value:"half_day",label:"Half day"}],"Choose status")}<input id="staff-attendance-note" maxlength="500" placeholder="Optional note"><button class="button button-primary" data-action="save-staff-attendance">Save staff attendance</button></div><div id="staff-attendance-recent">${empty("Loading staff attendance","Fetching recent teacher and staff attendance records.","◷")}</div>`):"";
     if(!canTakeStudentAttendance) {
-      $("page-content").innerHTML=isHod?staffPanel:staffPanel+recordsPanel;
-      if(role==="admin"||isHod) loadRecentStaffAttendance().catch(e=>{const el=$("staff-attendance-recent");if(el)el.innerHTML=`<div class="alert alert-error">${escapeHtml(e.message)}</div>`;});
+      $("page-content").innerHTML=isHod?staffPanel:staffPanel+(role==="admin"?adminOverallPanel:recordsPanel);
+      if(role==="admin"){loadRecentStaffAttendance().catch(e=>{const el=$("staff-attendance-recent");if(el)el.innerHTML=`<div class="alert alert-error">${escapeHtml(e.message)}</div>`;});loadAdminRegisterAttendance().catch(e=>{const el=$("register-admin-results");if(el)el.innerHTML='<div class="alert alert-error">'+escapeHtml(e.message||"Could not load attendance.")+'</div>';});}
+      else if(isHod) loadRecentStaffAttendance().catch(e=>{const el=$("staff-attendance-recent");if(el)el.innerHTML=`<div class="alert alert-error">${escapeHtml(e.message)}</div>`;});
       return;
     }
     const options=state.cache.assignments.filter(a=>a.teacher_id===state.user.id).map(a=>({value:a.id,label:assignedClassSubject(a.id)}));
