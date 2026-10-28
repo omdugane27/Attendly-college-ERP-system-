@@ -300,7 +300,7 @@
     let metrics=role==="student"
       ? [stat("My records",records.length,"Attendance entries","◷"),stat("Classes",classCount,"Enrolled classes","▤"),stat("Attended",records.filter(r=>["present","late"].includes(r.status)).length,"Present or late","✓"),stat("Overall attendance",records.length?Math.round(records.filter(r=>["present","late"].includes(r.status)).length/records.length*100)+"%":"—","Across recorded sessions","↗")]
       : [stat("Students",studentCount,"Registered student profiles","♙"),stat("Classes",classCount,"Available to your role","▤"),stat("Present today",allToday.filter(r=>r.status==="present").length,"Today's marked present","✓"),stat("Attendance rate",allToday.length?attendancePct+"%":"—",allToday.length+" records for today","↗")];
-    setHeading(role==="student"?"Your overview":role==="teacher"?"Teacher overview":"Good morning",subtitle,"YOUR SCHOOL AT A GLANCE",role!=="student"?button("＋ Take attendance","go-attendance","button button-primary"):"");
+    const hour=new Date().getHours();const greeting=hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";const displayName=String(state.profile?.full_name||"").trim().split(/\s+/)[0];setHeading(`${greeting}${displayName?", "+displayName:""}`,subtitle,"YOUR SCHOOL AT A GLANCE",role!=="student"?button("＋ Take attendance","go-attendance","button button-primary"):"");
     const weekly=Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(6-i));const iso=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;const rr=records.filter(r=>r.attendance_date===iso);const n=rr.filter(r=>["present","late"].includes(r.status)).length;return {label:d.toLocaleDateString(undefined,{weekday:"short"}),value:rr.length?Math.round(n/rr.length*100):0};});
     const counts=["present","absent","late","leave"].map(status=>({status,value:allToday.filter(r=>r.status===status).length}));
     const recentTable=table(["DATE","STUDENT / CLASS","SUBJECT","STATUS"],recentRows(recent,role!=="student"),"No attendance yet","When attendance is recorded, the latest entries will appear here.");
@@ -566,11 +566,10 @@
       +profileField("guardian_phone","Parent / guardian mobile","tel",p.guardian_phone||"")
       +profileField("emergency_contact","Emergency contact","tel",p.emergency_contact||"")
       +profileField("address","Residential address","textarea",p.address||"")
-      +'<section class="profile-otp-box"><strong>SMS OTP verification required</strong><p class="panel-subtitle">OTP will be sent to your registered mobile number ending '+escapeHtml(String(p.phone||"").replace(/\D/g,"").slice(-4)||"not set")+'.</p><div class="form-actions"><button type="button" class="button button-secondary" data-action="profile-otp-send">Send OTP</button></div><label class="profile-edit-field">6-digit OTP<input name="profile_otp" id="profile-change-otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="Enter OTP"></label><input type="hidden" id="profile-otp-verified" value="false"><button type="button" class="button button-secondary" data-action="profile-otp-verify">Verify OTP</button><p id="profile-otp-status" class="panel-subtitle">Verify your mobile before submitting the request.</p></section>'
+      +'<p class="panel-subtitle profile-edit-note">No OTP verification is required. Submitted changes will be reviewed by Admin before they are applied.</p>'
       +'<p class="panel-subtitle profile-edit-note">Email, Student ID, department, course, role and enrollment status are protected and cannot be edited in this form.</p>'
       +'<div class="form-actions"><button type="button" class="button button-outline" data-action="close-modal">Cancel</button><button type="submit" class="button button-primary">Submit for Admin approval</button></div></form>';
     showModal("Update personal information","STUDENT PROFILE",form,async()=>{
-      if($("profile-otp-verified")?.value!=="true") throw new Error("Verify the SMS OTP before submitting.");
       const fd=new FormData($("student-profile-change-form")),allowed=["full_name","phone","date_of_birth","gender","admission_year","blood_group","guardian_name","guardian_phone","emergency_contact","address"];
       const changes={};
       for(const key of allowed){
