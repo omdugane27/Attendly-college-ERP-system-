@@ -120,6 +120,8 @@
     $("side-name").textContent=display;$("side-role").textContent=displayRole;$("side-avatar").textContent=initials(display);$("top-name").textContent=display;$("top-role").textContent=displayRole;$("top-avatar").textContent=initials(display);dateLabel();
     document.querySelectorAll(".admin-only").forEach(el=>el.classList.toggle("hidden",p.role!=="admin"));
     document.querySelectorAll(".hod-only").forEach(el=>el.classList.toggle("hidden",p.institutional_role!=="hod"));
+    document.querySelectorAll(".student-only").forEach(el=>el.classList.toggle("hidden",p.role!=="student"));
+    document.querySelectorAll(".certificate-review-only").forEach(el=>el.classList.toggle("hidden",!(p.role==="admin"||p.institutional_role==="hod")));
     // Role-specific workspace navigation: admin gets institution modules; teachers and students get their own views.
     document.querySelectorAll(".nav-item[data-view]").forEach(el=>{
       const view=el.dataset.view;
@@ -766,6 +768,29 @@
     try {
       if(action==="complaint-reply"){if(state.profile?.role!=="admin")throw new Error("Only Admin can reply to complaints.");const response=document.querySelector('[data-response-for="'+target.dataset.id+'"]')?.value.trim()||null;const {error}=await sb.from("complaints").update({admin_response:response,updated_at:new Date().toISOString()}).eq("id",target.dataset.id);if(error)throw error;toast("Admin response saved.");await renderComplaints();return;}
       if(action==="close-profile-modal"){document.getElementById("modal")?.close();return;}
+      if(action==="close-modal"){document.getElementById("modal")?.close();return;}
+      if(action==="new-certificate-request"){openCertificateRequest(target.dataset.type);return;}
+      if(action==="download-certificate"){await downloadCertificate(target.dataset.id);return;}
+      if(action==="refresh-certificates"){await renderServices();return;}
+      if(action==="approve-certificate"||action==="reject-certificate"){
+        if(!(state.profile?.role==="admin"||state.profile?.institutional_role==="hod")) throw new Error("Only HOD or Admin can review certificate requests.");
+        const {data:req,error:fetchError}=await sb.from("certificate_requests").select("*").eq("id",target.dataset.id).single();
+        if(fetchError)throw fetchError;
+        if(req.status!=="pending")throw new Error("Only pending requests can be reviewed.");
+        const isAdmin=state.profile.role==="admin";
+        const update=isAdmin?{admin_approved:action==="approve-certificate"}:{hod_approved:action==="approve-certificate"};
+        if(action==="reject-certificate"){
+          const reason=window.prompt("Enter reason for rejection:");
+          if(reason===null)return;
+          if(!reason.trim())throw new Error("A rejection reason is required.");
+          update.status="rejected";update.rejection_reason=reason.trim();
+        }
+        const {error:updateError}=await sb.from("certificate_requests").update(update).eq("id",req.id);
+        if(updateError)throw updateError;
+        toast(action==="approve-certificate"?"Your approval has been recorded.":"Certificate request rejected.");
+        await renderCertificateRequests();return;
+      }
+
       if(action==="view-profile"){const p=state.cache.people.find(x=>String(x.id)===String(target.dataset.userId));if(!p)throw new Error("Profile details are not available to your account.");showPersonProfile(p);return;}
       if(action==="admin-profile-photo-upload") {
         if(state.profile?.role!=="admin")throw new Error("Only Admin can change another account's profile photo.");
