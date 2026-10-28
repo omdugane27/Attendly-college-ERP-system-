@@ -158,7 +158,7 @@
     }
     const [{data:condonations,error:condonationError},{data:leaves,error:leaveError},{data:applications,error:applicationError},{data:legacyReviews,error:legacyReviewError},{data:courses,error:coursesError}]=await Promise.all([
       sb.from("condonation_requests").select("id,student_id,class_subject_id,request_type,from_date,to_date,reason,status,created_at").eq("status","pending").order("created_at",{ascending:false}).limit(100),
-      sb.from("leave_requests").select("id,student_id,class_id,from_date,to_date,reason,status,created_at").eq("status","pending").order("created_at",{ascending:false}).limit(100),
+      sb.from("leave_requests").select("id,student_id,class_id,start_date,end_date,reason,status,created_at").eq("status","pending").order("created_at",{ascending:false}).limit(100),
       sb.from("course_enrollment_applications").select("id,student_id,course_id,requested_semester,created_at").eq("status","pending").order("created_at",{ascending:false}).limit(100),
       sb.rpc("list_department_enrollment_reviews"),
       sb.from("courses").select("id,name,code,department,duration_years,active").order("name")
