@@ -235,3 +235,6 @@ html[data-theme="dark"] #modal-content .form-grid>label select,
 html[data-theme="dark"] #modal-content .form-grid>label textarea{background:#0c1829;color:#e5edf9;border-color:#344761}
 html[data-theme="dark"] #modal .modal-head{border-color:#293b55}
 html[data-theme="dark"] #modal-content .form-grid .form-actions{border-color:#293b55}
+
+.profile-name-link{appearance:none;background:transparent;border:0;padding:0;margin:0;color:var(--erp-primary,#2468df);font:inherit;font-weight:750;text-align:left;cursor:pointer;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;overflow-wrap:anywhere}
+.profile-name-link:hover,.profile-name-link:focus-visible{text-decoration-color:currentColor;outline-offset:3px}
