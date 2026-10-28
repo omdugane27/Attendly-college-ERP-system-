@@ -166,18 +166,3 @@ html[data-theme="dark"] #page-content input:not([type=checkbox]):not([type=radio
   .modal-actions{display:flex;gap:8px;flex-wrap:wrap}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
-
-
-/* Only requested change: white email and password fields on login. */
-#auth-screen #auth-email,
-#auth-screen #auth-password {
-  background: #fff !important;
-  color: #1f2937 !important;
-  -webkit-text-fill-color: #1f2937 !important;
-  opacity: 1 !important;
-}
-#auth-screen #auth-email::placeholder,
-#auth-screen #auth-password::placeholder {
-  color: #64748b !important;
-  opacity: 1 !important;
-}
