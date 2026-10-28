@@ -690,7 +690,7 @@
           const response=await fetch(SUPABASE_URL+"/functions/v1/admin-create-account",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY},body:JSON.stringify({email:$("teacher-email").value.trim(),password:$("teacher-password").value,full_name:$("teacher-full-name").value.trim(),institutional_role:"teacher",role:"teacher",department:$("teacher-department").value.trim()})});
           const result=await response.json().catch(()=>({}));
           if(!response.ok)throw new Error(result.error||result.message||"Could not create Teacher account.");
-          toast("Teacher account created. Share the temporary password securely.");$("modal-root").innerHTML="";await refreshAndRender();
+          toast("Teacher account created. Share the temporary password securely.");await refreshAndRender();
         });
       } else if(action==="create-hod") {
         if(state.profile.role!=="admin")throw new Error("Only an administrator can create a HOD account.");
@@ -705,7 +705,7 @@
           const response=await fetch(SUPABASE_URL+"/functions/v1/admin-create-account",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token, "apikey":SUPABASE_KEY},body:JSON.stringify({email:$("hod-email").value.trim(),password:$("hod-password").value,full_name:$("hod-full-name").value.trim(),institutional_role:"hod",department:$("hod-department").value.trim()})});
           const result=await response.json().catch(()=>({}));
           if(!response.ok)throw new Error(result.error||result.message||"Could not create HOD account.");
-          toast("HOD account created. Share the temporary password securely.");$("modal").close();await refreshAndRender();
+          toast("HOD account created. Share the temporary password securely.");await refreshAndRender();
         });
       }
       else if(action==="show-role-help")$("role-help")?.classList.toggle("hidden");
