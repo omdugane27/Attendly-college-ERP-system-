@@ -296,3 +296,19 @@ body:has(#campus)>main>header p:not(.eyebrow){color:var(--sub);font-size:13px;ma
 #auth .form-grid button{width:100%;min-height:44px;margin-top:2px}
 #message:empty{display:none}
 @media(max-width:680px){body:has(#campus)>main{margin:8px auto!important;padding:14px!important}body:has(#campus)>main>header{gap:12px!important;margin-bottom:18px}body:has(#campus)>main>header>div:last-child{font-size:11px}#auth.panel{padding:18px;border-radius:14px}#auth .form-grid{gap:13px}}
+
+
+/* Merged certificate service cards and actions */
+/* Certificate services cards and compact action controls */
+.service-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:4px 0 22px}
+.service-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:170px;padding:22px 14px;border:1px solid var(--erp-line);border-radius:18px;background:var(--erp-surface,#fff);color:var(--erp-ink);cursor:pointer;text-align:center;transition:transform .18s,border-color .18s,box-shadow .18s}
+.service-card:hover{transform:translateY(-2px);border-color:#008577;box-shadow:0 10px 26px rgba(0,133,119,.10)}
+.service-icon{display:grid;place-items:center;width:68px;height:68px;border:2px solid #edf3f2;border-radius:50%;font-size:30px;color:#008577}
+.service-card strong{font-size:15px}
+.service-card small{color:var(--erp-muted)}
+.button-small{padding:7px 10px;font-size:12px;white-space:nowrap}
+#page-content td small{display:block;margin-top:4px;color:var(--erp-muted);font-size:11px;max-width:280px;white-space:normal}
+@media(max-width:700px){.service-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.service-card{min-height:145px;padding:16px 10px}.service-icon{width:56px;height:56px}}
+@media(max-width:420px){.service-grid{grid-template-columns:1fr}.service-card{min-height:120px}}
+
+
