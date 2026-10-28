@@ -127,11 +127,14 @@
     // Role-specific workspace navigation: admin gets institution modules; teachers and students get their own views.
     document.querySelectorAll(".nav-item[data-view]").forEach(el=>{
       const view=el.dataset.view;
-      const allowed=p.role==="admin"
-        ? ["overview","attendance","people","deleted-accounts","academics","governance","reports","complaints"].includes(view)
-        : p.institutional_role==="hod" && view==="hod"
-          ? true
-          : (p.role==="teacher" || p.role==="student") && ["overview","attendance","reports","complaints"].includes(view);
+      const role=String(p.role||"").trim().toLowerCase();
+      const institutionalRole=String(p.institutional_role||"").trim().toLowerCase();
+      const allowed=role==="admin"
+        ? ["overview","attendance","people","deleted-accounts","academics","governance","reports","complaints","certificate-requests"].includes(view)
+        : institutionalRole==="hod"
+          ? ["overview","attendance","reports","complaints","hod","certificate-requests"].includes(view)
+          : (role==="teacher" || role==="student")
+            && ["overview","attendance","reports","complaints",...(role==="student"?["services"]:[])].includes(view);
       el.classList.toggle("hidden",!allowed);
     });
     showApp();
