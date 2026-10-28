@@ -130,9 +130,9 @@
       const role=String(p.role||"").trim().toLowerCase();
       const institutionalRole=String(p.institutional_role||"").trim().toLowerCase();
       const allowed=role==="admin"
-        ? ["overview","attendance","people","deleted-accounts","academics","governance","reports","complaints","certificate-requests"].includes(view)
+        ? ["overview","attendance","people","deleted-accounts","academics","governance","reports","complaints","certificate-requests-admin"].includes(view)
         : institutionalRole==="hod"
-          ? ["overview","attendance","reports","complaints","hod","certificate-requests"].includes(view)
+          ? ["overview","attendance","reports","complaints","hod","certificate-requests-hod"].includes(view)
           : (role==="teacher" || role==="student")
             && ["overview","attendance","reports","complaints",...(role==="student"?["services"]:[])].includes(view);
       el.classList.toggle("hidden",!allowed);
@@ -266,13 +266,16 @@
     $("page-content").innerHTML=`<div class="service-grid">${cards}</div>${panel("My certificate requests","Your certificate becomes downloadable after HOD and Admin both approve it.",`<div class="table-wrap"><table><thead><tr><th>SERVICE / PURPOSE</th><th>REQUESTED</th><th>STATUS</th><th>HOD</th><th>ADMIN</th><th>DOCUMENT</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="empty-state">No certificate requests yet. Choose a service above to apply.</td></tr>'}</tbody></table></div>`) }`;
   }
   async function renderCertificateRequests() {
-    if(!(state.profile?.role==="admin"||state.profile?.institutional_role==="hod")){setView("overview");return;}
-    setHeading("Certificate Requests","Review student requests. HOD and Admin approvals are recorded separately.","CERTIFICATE APPROVALS");
+    const reviewRole=state.view==="certificate-requests-admin"?"admin":"hod";
+    if(!(reviewRole==="admin"?state.profile?.role==="admin":state.profile?.institutional_role==="hod")){setView("overview");return;}
+    setHeading(reviewRole==="admin"?"Admin Certificate Approvals":"HOD Certificate Approvals",
+      reviewRole==="admin"?"Review student requests in the Admin approval queue.":"Review student requests in the HOD approval queue.",
+      reviewRole==="admin"?"ADMIN SERVICES":"HOD SERVICES");
     const {data,error}=await sb.from("certificate_requests").select("*,student:profiles!certificate_requests_student_id_fkey(full_name,email,student_number,department,course_name,semester)").order("created_at",{ascending:false});
     if(error) throw error;
     const rows=(data||[]).map(r=>{
       const p=r.student||{};
-      const own=state.profile.role==="admin"?"admin":"hod";
+      const own=reviewRole;
       const approved=own==="admin"?r.admin_approved:r.hod_approved;
       const canReview=r.status==="pending"&&!approved;
       return `<tr><td><strong>${escapeHtml(p.full_name||p.email||"Student")}</strong><small>${escapeHtml(p.student_number||"")}</small></td><td>${escapeHtml(p.department||"—")}<small>${escapeHtml(p.course_name||"")}</small></td><td><strong>${escapeHtml(r.certificate_type)}</strong><small>${escapeHtml(r.purpose||"—")}</small></td><td>${fmtDate(String(r.created_at||"").slice(0,10))}</td><td>${r.hod_approved?"Approved":"Pending"}</td><td>${r.admin_approved?"Approved":"Pending"}</td><td>${badge(r.status)}${r.rejection_reason?'<small>'+escapeHtml(r.rejection_reason)+'</small>':""}</td><td>${canReview?`<button class="button button-primary button-small" data-action="approve-certificate" data-id="${r.id}">Approve</button> <button class="button button-outline button-small" data-action="reject-certificate" data-id="${r.id}">Reject</button>`:r.status==="approved"?(r.pdf_status==="ready"?'<span class="text-muted">PDF ready</span>':r.pdf_status==="failed"?'<span class="text-muted">PDF failed</span>':'<span class="text-muted">PDF generating…</span>'):approved?"Approved by you":"—"}</td></tr>`;
@@ -317,6 +320,8 @@
       case "hod": return renderHodDashboard();
       case "services": return renderServices();
       case "certificate-requests": return renderCertificateRequests();
+      case "certificate-requests-hod": return renderCertificateRequests();
+      case "certificate-requests-admin": return renderCertificateRequests();
       default: return renderOverview();
     }
   }
@@ -790,9 +795,19 @@
           if(!reason.trim())throw new Error("A rejection reason is required.");
           update.status="rejected";update.rejection_reason=reason.trim();
         }
+        const nextHodApproved=Object.prototype.hasOwnProperty.call(update,"hod_approved")?update.hod_approved:req.hod_approved;
+        const nextAdminApproved=Object.prototype.hasOwnProperty.call(update,"admin_approved")?update.admin_approved:req.admin_approved;
+        if(action==="approve-certificate"&&nextHodApproved&&nextAdminApproved) update.status="approved";
         const {error:updateError}=await sb.from("certificate_requests").update(update).eq("id",req.id);
         if(updateError)throw updateError;
-        toast(action==="approve-certificate"?"Your approval has been recorded.":"Certificate request rejected.");
+        if(action==="approve-certificate"&&nextHodApproved&&nextAdminApproved){
+          const {data:genData,error:genError}=await sb.functions.invoke("certificate-pdf",{body:{action:"generate",request_id:req.id}});
+          if(genError) toast("Both approvals saved. PDF generation needs attention: "+genError.message);
+          else if(genData?.status==="ready") toast("Both approvals saved. Certificate PDF is ready.");
+          else toast("Both approvals saved. Certificate generation started.");
+        } else {
+          toast(action==="approve-certificate"?"Your approval has been recorded.":"Certificate request rejected.");
+        }
         await renderCertificateRequests();return;
       }
 
