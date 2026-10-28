@@ -158,7 +158,7 @@
     }
     const [{data:condonations,error:condonationError},{data:leaves,error:leaveError},{data:applications,error:applicationError},{data:legacyReviews,error:legacyReviewError},{data:courses,error:coursesError}]=await Promise.all([
       sb.from("condonation_requests").select("id,student_id,class_subject_id,request_type,from_date,to_date,reason,status,created_at").eq("status","pending").order("created_at",{ascending:false}).limit(100),
-      sb.from("leave_requests").select("id,student_id,class_id,start_date,end_date,reason,status,created_at").eq("status","pending").order("created_at",{ascending:false}).limit(100),
+      sb.from("leave_requests").select("id,student_id,class_id,from_date,to_date,reason,status,created_at").eq("status","pending").order("created_at",{ascending:false}).limit(100),
       sb.from("course_enrollment_applications").select("id,student_id,course_id,requested_semester,created_at").eq("status","pending").order("created_at",{ascending:false}).limit(100),
       sb.rpc("list_department_enrollment_reviews"),
       sb.from("courses").select("id,name,code,department,duration_years,active").order("name")
@@ -170,7 +170,7 @@
     const pendingLeaves=(leaves||[]).filter(x=>deptClassIds.has(x.class_id));
     const approvalRows=[
       ...pendingCondonations.map(x=>'<tr><td>Condonation · '+escapeHtml(x.request_type)+'</td><td>'+escapeHtml(personName(x.student_id))+'</td><td>'+escapeHtml(x.from_date+' – '+x.to_date)+'</td><td>'+escapeHtml(x.reason)+'</td><td><button class="button button-small" data-action="hod-approval" data-kind="condonation" data-id="'+x.id+'" data-status="approved">Approve</button> <button class="button button-small button-secondary" data-action="hod-approval" data-kind="condonation" data-id="'+x.id+'" data-status="rejected">Reject</button></td></tr>'),
-      ...pendingLeaves.map(x=>'<tr><td>Leave request</td><td>'+escapeHtml(personName(x.student_id))+'</td><td>'+escapeHtml(x.start_date+' – '+x.end_date)+'</td><td>'+escapeHtml(x.reason)+'</td><td><button class="button button-small" data-action="hod-approval" data-kind="leave" data-id="'+x.id+'" data-status="approved">Approve</button> <button class="button button-small button-secondary" data-action="hod-approval" data-kind="leave" data-id="'+x.id+'" data-status="rejected">Reject</button></td></tr>')
+      ...pendingLeaves.map(x=>'<tr><td>Leave request</td><td>'+escapeHtml(personName(x.student_id))+'</td><td>'+escapeHtml(x.from_date+' – '+x.to_date)+'</td><td>'+escapeHtml(x.reason)+'</td><td><button class="button button-small" data-action="hod-approval" data-kind="leave" data-id="'+x.id+'" data-status="approved">Approve</button> <button class="button button-small button-secondary" data-action="hod-approval" data-kind="leave" data-id="'+x.id+'" data-status="rejected">Reject</button></td></tr>')
     ];
     if(applicationError)console.warn("Course applications:",applicationError.message);
     if(legacyReviewError)console.warn("Department enrollment reviews:",legacyReviewError.message);
@@ -505,7 +505,7 @@
     const photoPreview=p.profile_photo_path?'<p class="panel-subtitle">Current profile photo saved.</p>':'<p class="panel-subtitle">No profile photo uploaded yet.</p>';
     const form='<form id="student-profile-change-form" class="form-grid profile-edit-grid"><section class="profile-photo-upload"><strong>Profile photo</strong>'+photoPreview+'<label class="profile-edit-field">Choose photo (JPG, PNG or WebP, max 5 MB)<input type="file" id="student-profile-photo-file" accept="image/jpeg,image/png,image/webp"></label><button type="button" class="button button-secondary" data-action="student-profile-photo-upload">Upload profile photo</button></section>'
       +profileField("full_name","Full name","text",p.full_name,true)
-      +profileField("phone","Mobile number (new number applies after Admin approval)","tel",p.phone||"",true)
+      +profileField("phone","Mobile number (new number applies after Admin approval)","tel",p.phone||"",true)+'<p class="panel-subtitle profile-edit-note">'+(p.phone?'OTP is sent to your currently registered mobile number. After verifying it, enter the new mobile number here; Admin approval is required before the new number is saved.':'No mobile number is saved in your profile. Enter the mobile number you want to add; OTP will be sent to that number. Admin approval is required before it is saved.')+'</p>'
       +profileField("date_of_birth","Date of birth","date",p.date_of_birth||"")
       +'<label class="profile-edit-field">Gender<select name="gender"><option value="">Not specified</option>'+["female","male","non_binary","prefer_not_to_say"].map(v=>'<option value="'+v+'" '+(p.gender===v?'selected':'')+'>'+({female:"Female",male:"Male",non_binary:"Non-binary",prefer_not_to_say:"Prefer not to say"}[v])+'</option>').join("")+'</select></label>'
       +profileField("admission_year","Admission year","number",p.admission_year||"")
@@ -514,9 +514,11 @@
       +profileField("guardian_phone","Parent / guardian mobile","tel",p.guardian_phone||"")
       +profileField("emergency_contact","Emergency contact","tel",p.emergency_contact||"")
       +profileField("address","Residential address","textarea",p.address||"")
+      +'<section class="profile-otp-box"><strong>SMS OTP verification required</strong><p class="panel-subtitle">OTP will be sent to your registered mobile number ending '+escapeHtml(String(p.phone||"").replace(/\D/g,"").slice(-4)||"not set")+'.</p><div class="form-actions"><button type="button" class="button button-secondary" data-action="profile-otp-send">Send OTP</button></div><label class="profile-edit-field">6-digit OTP<input name="profile_otp" id="profile-change-otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="Enter OTP"></label><input type="hidden" id="profile-otp-verified" value="false"><button type="button" class="button button-secondary" data-action="profile-otp-verify">Verify OTP</button><p id="profile-otp-status" class="panel-subtitle">Verify your mobile before submitting the request.</p></section>'
       +'<p class="panel-subtitle profile-edit-note">Email, Student ID, department, course, role and enrollment status are protected and cannot be edited in this form.</p>'
       +'<div class="form-actions"><button type="button" class="button button-outline" data-action="close-modal">Cancel</button><button type="submit" class="button button-primary">Submit for Admin approval</button></div></form>';
     showModal("Update personal information","STUDENT PROFILE",form,async()=>{
+      if($("profile-otp-verified")?.value!=="true") throw new Error("Verify the SMS OTP before submitting.");
       const fd=new FormData($("student-profile-change-form")),allowed=["full_name","phone","date_of_birth","gender","admission_year","blood_group","guardian_name","guardian_phone","emergency_contact","address"];
       const changes={};
       for(const key of allowed){
@@ -612,7 +614,32 @@
       else if(action==="student-id-card") {
         await showStudentIdCard(target.dataset.userId);
       }
-      if(action==="student-profile-edit") openStudentProfileEditor();
+      if(action==="profile-otp-send") {
+        if(state.profile?.role!=="student" || state.profile?.enrollment_status!=="approved") throw new Error("Only approved students can request OTP.");
+        target.disabled=true;target.textContent="Sending…";
+        try{
+          const form=$("student-profile-change-form");const enteredPhone=String(form?.elements?.namedItem("phone")?.value||"").trim();if(!state.profile.phone&&!enteredPhone)throw new Error("Enter your new 10-digit mobile number first, then request OTP.");const {data,error}=await sb.functions.invoke("student-profile-change-otp",{body:{action:"send",phone:state.profile.phone||enteredPhone}});if(error){let detail="";try{detail=(await error.context?.json())?.error||"";}catch{}throw new Error(detail||error.message||"OTP request failed.");}
+          if(error) throw error;
+          if(data?.error) throw new Error(data.error);
+          $("profile-otp-verified").value="false";
+          $("profile-otp-status").textContent=data?.message||"OTP sent. It expires in 5 minutes.";
+          toast("OTP sent to registered mobile.");
+        }finally{target.disabled=false;target.textContent="Resend OTP";}
+      }
+      else if(action==="profile-otp-verify") {
+        if(state.profile?.role!=="student") throw new Error("Student access required.");
+        const otp=$("profile-change-otp")?.value?.trim()||"";
+        target.disabled=true;target.textContent="Verifying…";
+        try{
+          const form=$("student-profile-change-form");const enteredPhone=String(form?.elements?.namedItem("phone")?.value||"").trim();const {data,error}=await sb.functions.invoke("student-profile-change-otp",{body:{action:"verify",otp,phone:state.profile.phone||enteredPhone}});if(error){let detail="";try{detail=(await error.context?.json())?.error||"";}catch{}throw new Error(detail||error.message||"OTP verification failed.");}
+          if(error) throw error;
+          if(data?.error) throw new Error(data.error);
+          $("profile-otp-verified").value="true";
+          $("profile-otp-status").textContent="Mobile verified. You can submit the request.";
+          toast("OTP verified.");
+        }finally{target.disabled=false;target.textContent="Verify OTP";}
+      }
+      else if(action==="student-profile-edit") openStudentProfileEditor();
       else if(action==="profile-change-review") {
         if(state.profile.role!=="admin") throw new Error("Administrator access required.");
         const note=prompt("Optional note for the student:")||null;
