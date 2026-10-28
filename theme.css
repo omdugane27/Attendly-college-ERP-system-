@@ -1,0 +1,14 @@
+/* Attendly Dark Mode — additive stylesheet */
+body.attendly-dark{background:#0e1524!important;color:#e6ebf5}
+body.attendly-dark .sidebar,body.attendly-dark .topbar,body.attendly-dark .panel,body.attendly-dark .stat-card,body.attendly-dark .modal-card,body.attendly-dark .auth-form-panel,body.attendly-dark .table-wrap{background:#182235!important;color:#e6ebf5!important;border-color:#303b50!important}
+body.attendly-dark h1,body.attendly-dark h2,body.attendly-dark h3,body.attendly-dark strong,body.attendly-dark label,body.attendly-dark .panel-title{color:#e6ebf5}
+body.attendly-dark p,body.attendly-dark small,body.attendly-dark .panel-subtitle,body.attendly-dark .breadcrumbs{color:#aab5c8}
+body.attendly-dark input,body.attendly-dark select,body.attendly-dark textarea,body.attendly-dark .inline-select,body.attendly-dark .filters input,body.attendly-dark .filters select{background:#111a2b!important;color:#e6ebf5!important;border-color:#303b50!important}
+body.attendly-dark table th{background:#111a2b!important;color:#aab5c8!important}
+body.attendly-dark table td,body.attendly-dark table th{border-color:#303b50!important}
+body.attendly-dark .nav-item{color:#aab5c8}body.attendly-dark .nav-item:hover,body.attendly-dark .nav-item.active{background:#252e50!important;color:#b7c0ff!important}
+body.attendly-dark .button-outline{background:#1c2940!important;color:#e6ebf5!important;border-color:#303b50!important}
+body.attendly-dark .button-secondary{background:#252e50!important;color:#c4cbff!important}
+#attendly-theme-toggle{position:fixed;right:16px;bottom:16px;z-index:9999;width:48px;height:48px;border:1px solid #d8deea;border-radius:50%;background:#fff;color:#1e293b;box-shadow:0 8px 24px #0003;font-size:21px;cursor:pointer}
+body.attendly-dark #attendly-theme-toggle{background:#182235;color:#e6ebf5;border-color:#303b50}
+#attendly-theme-toggle:focus-visible{outline:3px solid #8e9aff;outline-offset:3px}

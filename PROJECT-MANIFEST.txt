@@ -1,0 +1,15 @@
+Attendly Student Attendance Management System
+Project files:
+- index.html: application shell
+- styles.css: responsive professional interface
+- app.js: Supabase authentication and workflows
+- supabase/schema.sql: database schema and RLS policies
+- README.md: setup, deployment, and troubleshooting
+- vercel.json: static hosting configuration
+- tests/smoke-check.js: structural smoke checks
+
+Validation performed:
+- node --check app.js: passed
+- node tests/smoke-check.js: passed
+- HTML ID duplicate check: passed
+Not yet verified: full authenticated browser test against Supabase; GitHub repository push.

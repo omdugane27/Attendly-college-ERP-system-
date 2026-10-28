@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Attendly Firebase Auth Test</title>
+  <style>
+    body{font:16px system-ui,sans-serif;max-width:620px;margin:24px auto;padding:0 16px;color:#172033}
+    section{border:1px solid #d9e0ea;border-radius:12px;padding:16px;margin:16px 0}
+    label{display:block;margin:10px 0 4px;font-weight:600}
+    input,button{box-sizing:border-box;width:100%;padding:12px;border-radius:8px;border:1px solid #cbd5e1;font:inherit}
+    button{margin-top:10px;background:#1d4ed8;color:white;border:0;font-weight:650}
+    button:disabled{opacity:.6}#status{white-space:pre-wrap;background:#f1f5f9;padding:12px;border-radius:8px}
+    #recaptcha-container{margin:12px 0}
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <h1>Attendly Firebase Auth Test</h1>
+  <p>This is a standalone test page on the feature branch. It tests Firebase email verification and phone OTP only; it does not create a Supabase profile or change the live app.</p>
+  <div id="status" role="status">Initializing Firebase…</div>
+  <section>
+    <h2>Email verification test</h2>
+    <label for="email">Test email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com">
+    <label for="password">Temporary test password (min 8 characters)</label><input id="password" type="password" minlength="8" autocomplete="new-password">
+    <button id="email-test">Create test account and send verification email</button>
+    <button id="check-email" type="button">Check whether current Firebase user is verified</button>
+  </section>
+  <section>
+    <h2>Phone SMS OTP test</h2>
+    <label for="phone">Phone number in international format</label><input id="phone" type="tel" autocomplete="tel" placeholder="+91XXXXXXXXXX">
+    <div id="recaptcha-container"></div>
+    <button id="send-otp">Send SMS OTP</button>
+    <label for="otp">OTP code</label><input id="otp" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code">
+    <button id="verify-otp">Verify OTP</button>
+  </section>
+  <section><button id="signout" type="button">Sign out from Firebase test</button></section>
+<script>
+(function(){
+  const config={
+    apiKey:"AIzaSyB-icF6zYcvQLKM6ne9OtyzlAOKwbDWMAY",
+    authDomain:"attendly-web-68887.firebaseapp.com",
+    projectId:"attendly-web-68887",
+    storageBucket:"attendly-web-68887.firebasestorage.app",
+    messagingSenderId:"516599149981",
+    appId:"1:516599149981:web:b2761faa72d946116c2b74",
+    measurementId:"G-T7DGBFPP64"
+  };
+  const status=document.getElementById("status");
+  const say=(s)=>status.textContent=s;
+  let auth, verifier, confirmation;
+  try { if(!firebase.apps.length) firebase.initializeApp(config); auth=firebase.auth(); say("Firebase initialized. Use a test account only."); }
+  catch(e){say("Firebase initialization failed: "+e.message);return;}
+  document.getElementById("email-test").onclick=async()=>{
+    const email=document.getElementById("email").value.trim(),password=document.getElementById("password").value;
+    try{
+      if(!email||password.length<8)throw new Error("Enter an email and password of at least 8 characters.");
+      const cred=await auth.createUserWithEmailAndPassword(email,password);
+      await cred.user.sendEmailVerification({url:location.origin+location.pathname,handleCodeInApp:false});
+      say("Firebase test account created. Verification email sent to "+email+". Check inbox/spam, click the link, then press Check verification.");
+    }catch(e){say("Email test error: "+e.message);}
+  };
+  document.getElementById("check-email").onclick=async()=>{
+    try{if(!auth.currentUser)throw new Error("No current test user. Create/sign in to the test account first.");await auth.currentUser.reload();say(auth.currentUser.email+" — emailVerified: "+auth.currentUser.emailVerified);}
+    catch(e){say("Verification check error: "+e.message);}
+  };
+  document.getElementById("send-otp").onclick=async()=>{
+    try{
+      const phone=document.getElementById("phone").value.trim();
+      if(!phone.startsWith("+"))throw new Error("Use international format, for example +91 followed by the mobile number.");
+      if(!verifier)verifier=new firebase.auth.RecaptchaVerifier("recaptcha-container",{size:"normal"});
+      await verifier.render();
+      confirmation=await auth.signInWithPhoneNumber(phone,verifier);
+      say("SMS request submitted. If Firebase allows the number and quota, enter the received code. If reCAPTCHA failed, reload and retry.");
+    }catch(e){if(verifier){try{verifier.clear()}catch(_){ } verifier=null;}say("SMS OTP error: "+e.message);}
+  };
+  document.getElementById("verify-otp").onclick=async()=>{
+    try{if(!confirmation)throw new Error("Send an OTP first.");const code=document.getElementById("otp").value.trim();if(!code)throw new Error("Enter the OTP.");const result=await confirmation.confirm(code);say("Phone verified for Firebase test user: "+result.user.phoneNumber+". This test does not connect this user to Supabase.");}
+    catch(e){say("OTP verification error: "+e.message);}
+  };
+  document.getElementById("signout").onclick=async()=>{try{await auth.signOut();say("Signed out of Firebase test.");}catch(e){say(e.message)}};
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="Attendly student attendance management">
+  <title>Attendly — Attendance Management</title>
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+  #signup-fields.signup-grid{display:grid;grid-template-columns:1fr;gap:7px;margin:14px 0}
+  #signup-fields.signup-grid label{font-size:12px;font-weight:650;color:#475569;margin-top:4px}
+  #signup-fields.signup-grid input,#signup-fields.signup-grid select,#signup-fields.signup-grid textarea{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #dbe2ed;border-radius:9px;background:#fff;font:inherit;color:#1f2937}
+  #signup-fields.signup-grid textarea{resize:vertical}
+    .brand-logo{width:142px;max-width:100%;height:auto;display:block}.brand{display:flex;align-items:center;gap:8px}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
+</head>
+<body>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <section id="auth-screen" class="auth-screen">
+    <div class="auth-brand-panel">
+      <a class="brand brand-light" href="#"><img class="brand-logo" src="./logo.svg" alt="Attendly College ERP"></a>
+      <div class="auth-pitch">
+        <div class="eyebrow eyebrow-light">ATTENDANCE, SIMPLIFIED</div>
+        <h1>Every class.<br><span>Every student.</span><br>Always in sync.</h1>
+        <p>A clear, dependable workspace for recording attendance and understanding student progress.</p>
+        <div class="pitch-points"><div><span class="check-circle">✓</span> Designed for teachers and students</div><div><span class="check-circle">✓</span> Secure records and useful reports</div><div><span class="check-circle">✓</span> Works on mobile and desktop</div></div>
+      </div>
+      <div class="auth-panel-footer">A simpler school day starts here.</div>
+    </div>
+    <div class="auth-form-panel">
+      <div class="auth-form-wrap">
+        <a class="brand brand-dark auth-mobile-brand" href="#"><img class="brand-logo" src="./logo.svg" alt="Attendly College ERP"></a>
+        <div class="auth-form-heading"><div class="eyebrow">YOUR WORKSPACE</div><h2 id="auth-title">Welcome back</h2><p id="auth-subtitle">Sign in to continue to your dashboard.</p></div>
+        <form id="auth-form">
+          <div id="signup-fields" class="hidden signup-grid">
+          <label for="signup-name">Full name *</label><input id="signup-name" name="name" autocomplete="name" maxlength="100" placeholder="As per college record" data-signup-required="true">
+          <p class="panel-subtitle">Your Student ID will be generated automatically after registration. You will receive it after HOD approval.</p>
+          <label for="signup-phone">Mobile number *</label><input id="signup-phone" name="phone" type="tel" autocomplete="tel" maxlength="20" placeholder="+91…" data-signup-required="true">
+          <label for="signup-dob">Date of birth</label><input id="signup-dob" name="date_of_birth" type="date">
+          <label for="signup-gender">Gender (optional)</label><select id="signup-gender" name="gender"><option value="">Prefer not to specify</option><option value="female">Female</option><option value="male">Male</option><option value="non_binary">Non-binary</option><option value="prefer_not_to_say">Prefer not to say</option></select>
+          <label for="signup-department">Department *</label><input id="signup-department" name="department" maxlength="100" placeholder="e.g. Computer Applications" data-signup-required="true">
+          <label for="signup-course">Course / Program *</label><select id="signup-course" name="course_id" data-signup-required="true"><option value="">Choose a course</option></select>
+          <label for="signup-semester">Current semester *</label><select id="signup-semester" name="semester" data-signup-required="true"><option value="">Select semester</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+          <label for="signup-year">Admission year</label><input id="signup-year" name="admission_year" type="number" min="2000" max="2100" placeholder="e.g. 2025">
+          <label for="signup-blood">Blood group (optional)</label><select id="signup-blood" name="blood_group"><option value="">Not provided</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option><option value="unknown">Unknown</option></select>
+          <label for="signup-guardian">Parent / Guardian name</label><input id="signup-guardian" name="guardian_name" maxlength="120" placeholder="Parent or guardian">
+          <label for="signup-guardian-phone">Parent / Guardian mobile</label><input id="signup-guardian-phone" name="guardian_phone" type="tel" maxlength="20" placeholder="Optional">
+          <label for="signup-emergency">Emergency contact</label><input id="signup-emergency" name="emergency_contact" type="tel" maxlength="20" placeholder="Optional">
+          <label for="signup-address">Residential address</label><textarea id="signup-address" name="address" maxlength="500" rows="2" placeholder="Address"></textarea>
+        </div>
+          <label for="auth-email">Email address or Student ID</label><input id="auth-email" name="email" type="text" autocomplete="username" placeholder="Email or STU-2026-000001" required>
+          <label for="auth-password">Password</label><input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters" required>
+          <button id="auth-submit" class="button button-primary button-full" type="submit">Sign in <span>→</span></button>
+        </form>
+        <div class="auth-switch"><span id="auth-switch-copy">New to Attendly?</span><button id="auth-switch" class="text-button" type="button">Create an account</button></div>
+        <p class="auth-footnote">Your account access is managed by your institution.</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="app-screen" class="app-screen hidden">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand"><a class="brand brand-dark" href="#"><img class="brand-logo" src="./logo.svg" alt="Attendly College ERP"></a><button id="sidebar-close" class="icon-button mobile-only" aria-label="Close menu">×</button></div>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="main-nav" aria-label="Main navigation">
+        <button class="nav-item active" data-view="overview"><span class="nav-icon">▦</span> Overview</button>
+        <button class="nav-item" data-view="attendance"><span class="nav-icon">◷</span> Attendance</button>
+        <button class="nav-item hod-only" data-view="hod"><span class="nav-icon">▥</span> HOD Dashboard</button>
+        <button class="nav-item admin-only" data-view="people"><span class="nav-icon">♙</span> People & roles</button>
+        <button class="nav-item admin-only" data-view="deleted-accounts"><span class="nav-icon">▣</span> Deleted Accounts</button>
+        <button class="nav-item admin-only" data-view="academics"><span class="nav-icon">▤</span> Classes & subjects</button>
+        <button class="nav-item admin-only" data-view="governance"><span class="nav-icon">⬡</span> Governance & compliance</button>
+        <button class="nav-item" data-view="reports"><span class="nav-icon">▥</span> Reports</button>
+        <a class="nav-item" href="./campus.html"><span class="nav-icon">▣</span> Campus services</a>
+        <a class="nav-item" href="./college.html"><span class="nav-icon">🎓</span> College eligibility</a>
+      </nav>
+      <div class="sidebar-bottom"><div class="sidebar-help"><span class="help-icon">?</span><div><strong>Need a hand?</strong><small>Check the setup guide</small></div></div><div class="side-user"><div id="side-avatar" class="avatar">A</div><div class="side-user-info"><strong id="side-name">Account</strong><small id="side-role">Student</small></div><button id="signout-button" class="icon-button" title="Sign out" aria-label="Sign out">↗</button></div></div>
+    </aside>
+    <div id="sidebar-scrim" class="sidebar-scrim"></div>
+    <main class="main-area">
+      <header class="topbar"><button id="sidebar-open" class="icon-button mobile-only" aria-label="Open menu">☰</button><div class="breadcrumbs"><span>Workspace</span><b>/</b><strong id="breadcrumb-current">Overview</strong></div><div class="topbar-actions"><button id="theme-toggle" class="button button-secondary" type="button" aria-label="Toggle color theme">Dark mode</button><button id="enable-notifications" class="button button-secondary" type="button">Enable notifications</button><span class="today-chip"><span class="status-dot"></span><span id="today-label">Today</span></span><button id="profile-button" class="profile-button"><span id="top-avatar" class="avatar avatar-small">A</span><span class="profile-button-copy"><strong id="top-name">Account</strong><small id="top-role">Student</small></span><span class="caret">⌄</span></button></div></header>
+      <div class="content-wrap">
+        <section class="page-heading"><div><div id="page-eyebrow" class="eyebrow">YOUR SCHOOL AT A GLANCE</div><h1 id="page-title">Good morning</h1><p id="page-description">Here’s what’s happening with attendance today.</p></div><div id="heading-actions" class="heading-actions"></div></section>
+        <div id="page-alert"></div>
+        <section id="page-content"></section>
+        <footer class="page-footer">Attendly <span>·</span> Student Attendance Management <span class="footer-status"><i></i> Secure workspace</span></footer>
+      </div>
+    </main>
+  </div>
+  <dialog id="modal" class="modal"><div class="modal-head"><div><div id="modal-eyebrow" class="eyebrow">WORKSPACE</div><h2 id="modal-title">Add new</h2></div><button id="modal-close" class="icon-button" aria-label="Close dialog">×</button></div><div id="modal-content"></div></dialog>
+  <script src="./app.js?v=professional-ui-refresh-20261028-24"></script>
+</body>
+</html>

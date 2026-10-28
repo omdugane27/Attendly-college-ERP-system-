@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111827"><title>Attendly Campus — Student Portal</title><link rel="stylesheet" href="./styles.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head>
+<body><main style="max-width:1100px;margin:24px auto;padding:16px">
+<header style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><p class="eyebrow">ATTENDLY CAMPUS</p><h1>Campus Services</h1><p>Leave requests, timetable, announcements and notifications</p></div><div><span id="who">Checking session…</span> <button id="signout" class="button button-outline">Sign out</button></div></header>
+<section id="auth" class="panel hidden"><h2>Sign in</h2><form id="login" class="form-grid"><label>Email<input id="email" type="email" required autocomplete="email"></label><label>Password<input id="password" type="password" required autocomplete="current-password"></label><button class="button button-primary">Sign in</button></form></section>
+<div id="message" role="status" style="margin:12px 0"></div>
+<section id="campus" class="hidden">
+<nav style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0"><button class="button button-outline" data-tab="leave">Leave</button><button class="button button-outline" data-tab="timetable">Timetable</button><button class="button button-outline" data-tab="announcements">Announcements</button><button class="button button-outline" data-tab="notifications">Notifications</button></nav>
+<section id="content" class="panel"></section>
+</section></main><script src="./campus.js"></script></body></html>
