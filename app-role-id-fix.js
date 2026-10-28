@@ -299,10 +299,21 @@
     if(error) throw error;
     if(r.status!=="approved"||!r.hod_approved||!r.admin_approved) throw new Error("Certificate is available only after HOD and Admin approval.");
     if(r.pdf_status!=="ready") throw new Error("Your certificate PDF is still being generated. Refresh the status in a few seconds.");
-    const {data,error:fnError}=await sb.functions.invoke("certificate-pdf",{body:{action:"signed-url",request_id:id}});
-    if(fnError) throw fnError;
-    if(!data?.url) throw new Error(data?.error||"Secure download link could not be created.");
-    window.open(data.url,"_blank","noopener,noreferrer");
+    // Open a blank tab synchronously so mobile browsers do not block the download popup.
+    const downloadTab=window.open("about:blank","_blank");
+    try {
+      const {data,error:fnError}=await sb.functions.invoke("certificate-pdf",{body:{action:"signed-url",request_id:id}});
+      if(fnError) {
+        const details=fnError.context && typeof fnError.context.json==="function" ? await fnError.context.clone().json().catch(()=>null) : null;
+        throw new Error(details?.error || fnError.message || "Could not create secure download link.");
+      }
+      if(!data?.url) throw new Error(data?.error||"Secure download link could not be created.");
+      if(downloadTab) downloadTab.location.replace(data.url);
+      else window.location.assign(data.url);
+    } catch (error) {
+      if(downloadTab) downloadTab.close();
+      throw error;
+    }
   }
 
 
