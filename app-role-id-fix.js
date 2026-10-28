@@ -1218,24 +1218,36 @@
   const navToggle = $("sidebar-open");
   const navSidebar = $("sidebar");
   const navScrim = $("sidebar-scrim");
+  const navMobile = window.matchMedia("(max-width: 680px)");
   const closeNav = () => {
     navSidebar.classList.remove("mobile-open");
     navScrim.classList.remove("visible");
     navToggle.setAttribute("aria-expanded", "false");
+    navToggle.setAttribute("aria-label", "Open navigation");
   };
   navToggle.addEventListener("click", () => {
-    if (window.matchMedia("(max-width: 680px)").matches) {
-      const isOpen = navSidebar.classList.toggle("mobile-open");
+    if (navMobile.matches) {
+      const isOpen = !navSidebar.classList.contains("mobile-open");
+      navSidebar.classList.toggle("mobile-open", isOpen);
       navScrim.classList.toggle("visible", isOpen);
       navToggle.setAttribute("aria-expanded", String(isOpen));
+      navToggle.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
     } else {
-      const isCollapsed = document.body.classList.toggle("sidebar-collapsed");
+      const isCollapsed = !document.body.classList.contains("sidebar-collapsed");
+      document.body.classList.toggle("sidebar-collapsed", isCollapsed);
       navToggle.setAttribute("aria-expanded", String(!isCollapsed));
       navToggle.setAttribute("aria-label", isCollapsed ? "Open navigation" : "Close navigation");
     }
   });
   $("sidebar-close").addEventListener("click", closeNav);
   navScrim.addEventListener("click", closeNav);
+  navSidebar.querySelectorAll(".nav-item").forEach(item => item.addEventListener("click", () => {
+    if (navMobile.matches) closeNav();
+  }));
+  navMobile.addEventListener?.("change", () => {
+    closeNav();
+    document.body.classList.remove("sidebar-collapsed");
+  });
   $("modal-close").addEventListener("click",()=>$("modal").close());
   $("profile-button").addEventListener("click",async()=>{try{await showPersonProfile(state.profile||{id:state.user?.id,email:state.user?.email,full_name:state.user?.user_metadata?.full_name,role:"student"});}catch(e){console.error("Could not open profile details",e);toast(e.message||"Could not load profile details.","error");}});
   document.querySelectorAll(".nav-item").forEach(el=>el.addEventListener("click",()=>setView(el.dataset.view)));
