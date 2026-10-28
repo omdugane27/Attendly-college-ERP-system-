@@ -166,3 +166,21 @@ html[data-theme="dark"] #page-content input:not([type=checkbox]):not([type=radio
   .modal-actions{display:flex;gap:8px;flex-wrap:wrap}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* Mobile login layout hotfix */
+@media screen and (max-width: 680px) {
+  html, body { width: 100%; min-width: 0; }
+  #auth-screen.auth-screen { display:grid !important; grid-template-columns:minmax(0,1fr) !important; min-height:100svh; width:100%; }
+  #auth-screen .auth-brand-panel { display:none !important; }
+  #auth-screen .auth-form-panel { display:grid !important; grid-column:1/-1; width:100%; min-width:0; min-height:100svh; box-sizing:border-box; padding:24px 18px !important; align-content:center; }
+  #auth-screen .auth-form-wrap { width:min(100%,430px) !important; margin-inline:auto; box-sizing:border-box; }
+  #auth-screen .auth-mobile-brand { display:flex !important; margin-bottom:28px !important; }
+  #auth-screen .auth-form-heading { margin-bottom:22px; }
+  #auth-screen .auth-form-heading h2 { font-size:clamp(25px,7vw,30px); }
+  #auth-screen .auth-form-wrap input { box-sizing:border-box; min-width:0; width:100%; }
+}
+@media screen and (max-width: 380px) {
+  #auth-screen .auth-form-panel { padding:20px 14px !important; }
+  #auth-screen .auth-mobile-brand { margin-bottom:22px !important; }
+}
