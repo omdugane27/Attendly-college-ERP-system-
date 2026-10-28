@@ -1215,9 +1215,27 @@
   });
   $("enable-notifications")?.addEventListener("click",async()=>{const b=$("enable-notifications");b.disabled=true;b.textContent="Checking…";try{if(!window.isSecureContext)throw new Error("Open Attendly on its HTTPS GitHub Pages address.");if(!("Notification" in window))throw new Error("This browser does not support web notifications. Open the site in Chrome.");if(Notification.permission==="denied")throw new Error("Notifications are blocked for this site. Chrome → Site settings → Notifications → Allow, then reload.");await enablePushNotifications();b.textContent="Notifications enabled";}catch(e){const msg=e?.message||String(e);b.textContent="Enable notifications";alertBox(msg,"error");toast(msg,"error");console.error("FCM enable error",e);}finally{b.disabled=false;}});
   $("signout-button").addEventListener("click",async()=>{const {error}=await sb.auth.signOut();if(error)toast(error.message,"error");else{state.user=null;state.profile=null;state.view="overview";state.cache={people:[],classes:[],subjects:[],assignments:[],enrollments:[],records:[]};state.reportRows=[];showAuth();toast("Signed out.");}});
-  $("sidebar-open").addEventListener("click",()=>{$("sidebar").classList.add("mobile-open");$("sidebar-scrim").classList.add("visible");});
-  $("sidebar-close").addEventListener("click",()=>{$("sidebar").classList.remove("mobile-open");$("sidebar-scrim").classList.remove("visible");});
-  $("sidebar-scrim").addEventListener("click",()=>{$("sidebar").classList.remove("mobile-open");$("sidebar-scrim").classList.remove("visible");});
+  const navToggle = $("sidebar-open");
+  const navSidebar = $("sidebar");
+  const navScrim = $("sidebar-scrim");
+  const closeNav = () => {
+    navSidebar.classList.remove("mobile-open");
+    navScrim.classList.remove("visible");
+    navToggle.setAttribute("aria-expanded", "false");
+  };
+  navToggle.addEventListener("click", () => {
+    if (window.matchMedia("(max-width: 680px)").matches) {
+      const isOpen = navSidebar.classList.toggle("mobile-open");
+      navScrim.classList.toggle("visible", isOpen);
+      navToggle.setAttribute("aria-expanded", String(isOpen));
+    } else {
+      const isCollapsed = document.body.classList.toggle("sidebar-collapsed");
+      navToggle.setAttribute("aria-expanded", String(!isCollapsed));
+      navToggle.setAttribute("aria-label", isCollapsed ? "Open navigation" : "Close navigation");
+    }
+  });
+  $("sidebar-close").addEventListener("click", closeNav);
+  navScrim.addEventListener("click", closeNav);
   $("modal-close").addEventListener("click",()=>$("modal").close());
   $("profile-button").addEventListener("click",async()=>{try{await showPersonProfile(state.profile||{id:state.user?.id,email:state.user?.email,full_name:state.user?.user_metadata?.full_name,role:"student"});}catch(e){console.error("Could not open profile details",e);toast(e.message||"Could not load profile details.","error");}});
   document.querySelectorAll(".nav-item").forEach(el=>el.addEventListener("click",()=>setView(el.dataset.view)));
