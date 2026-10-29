@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#111827">
   <meta name="description" content="Attendly — College ERP and attendance management for Admin, HOD, Teachers and Students">
   <title>Attendly — College ERP & Attendance</title>
-  <link rel="stylesheet" href="./styles.css?v=attendly-clickable-features-20261029-01">
+  <link rel="stylesheet" href="./styles.css?v=attendly-feature-modal-20261029-01">
   <style>
   #signup-fields.signup-grid{display:grid;grid-template-columns:1fr;gap:7px;margin:14px 0}
   #signup-fields.signup-grid label{font-size:12px;font-weight:650;color:#475569;margin-top:4px}
@@ -30,6 +30,18 @@
 <a href="#feature-details" data-feature="certificates" aria-controls="feature-detail-content"><span>▤</span>Certificates<br>& Services</a>
 <a href="#feature-details" data-feature="complaints" aria-controls="feature-detail-content"><span>☏</span>Complaints<br>& Support</a>
 </nav>
+<div id="feature-modal" class="feature-modal" hidden role="dialog" aria-modal="true" aria-labelledby="feature-modal-title">
+<div class="feature-modal-backdrop" data-feature-close></div>
+<section class="feature-modal-card">
+<button type="button" class="feature-modal-close" aria-label="Close feature details" data-feature-close>×</button>
+<span class="preview-eyebrow">ATTENDLY MODULE</span>
+<h2 id="feature-modal-title">Feature details</h2>
+<p id="feature-modal-summary"></p>
+<ul id="feature-modal-list" class="feature-detail-list"></ul>
+<div class="feature-modal-actions"><button type="button" class="button button-primary" id="feature-modal-signin">Sign in to access <span>→</span></button><button type="button" class="button button-secondary" data-feature-close>Keep exploring</button></div>
+<p class="feature-modal-note">Access to live records depends on your account role and permissions.</p>
+</section>
+</div>
 <section id="feature-details" class="feature-details" aria-live="polite">
 <div class="feature-details-heading"><span class="preview-eyebrow">EXPLORE ATTENDLY</span><h2 id="feature-detail-title">Choose a module to see what it includes</h2><p id="feature-detail-summary">Tap any feature above. Its details will appear here.</p></div>
 <div id="feature-detail-content" class="feature-detail-content"><div class="feature-detail-placeholder"><span>↟</span><b>All modules in one workspace</b><p>Select a feature above to view its details.</p></div></div>
@@ -137,6 +149,19 @@ const featureContent = {
   certificates: {title:"Certificates & Services",summary:"Track certificate requests and other campus services.",items:["Submit and track certificate requests","HOD and Admin approval workflow","Leave, timetable and announcement services","View request status and available documents"]},
   complaints: {title:"Complaints & Support",summary:"Submit and follow up on complaints through role-based access.",items:["Student, Teacher and HOD complaint submission","Complaint inbox for authorised staff","Track complaint status and updates","Admin complaint submission is disabled"]}
 };
+const featureModal = document.getElementById("feature-modal");
+const closeFeatureModal = () => {
+  if (!featureModal) return;
+  featureModal.hidden = true;
+  document.body.classList.remove("feature-modal-open");
+};
+featureModal?.querySelectorAll("[data-feature-close]").forEach((button) => button.addEventListener("click", closeFeatureModal));
+document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeFeatureModal(); });
+document.getElementById("feature-modal-signin")?.addEventListener("click", () => {
+  closeFeatureModal();
+  document.getElementById("auth-screen")?.scrollIntoView({behavior:"smooth",block:"start"});
+  document.getElementById("auth-email")?.focus({preventScroll:true});
+});
 document.querySelectorAll("#features [data-feature]").forEach((link) => {
   link.addEventListener("click", () => {
     const item = featureContent[link.dataset.feature];
@@ -164,6 +189,25 @@ document.querySelectorAll("#features [data-feature]").forEach((link) => {
       list.append(li);
     });
     panel.append(list);
+    if (featureModal) {
+      document.getElementById("feature-modal-title").textContent = item.title;
+      document.getElementById("feature-modal-summary").textContent = item.summary;
+      const modalList = document.getElementById("feature-modal-list");
+      modalList.replaceChildren();
+      item.items.forEach((label) => {
+        const li = document.createElement("li");
+        const mark = document.createElement("span");
+        mark.className = "feature-check";
+        mark.textContent = "✓";
+        const text = document.createElement("span");
+        text.textContent = label;
+        li.append(mark, text);
+        modalList.append(li);
+      });
+      featureModal.hidden = false;
+      document.body.classList.add("feature-modal-open");
+      featureModal.querySelector("[data-feature-close]")?.focus();
+    }
     document.getElementById("feature-details").scrollIntoView({behavior:"smooth",block:"start"});
   });
 });
