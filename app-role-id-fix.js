@@ -139,6 +139,16 @@
     });
     showApp();
   }
+  async function refreshAttendanceDashboard() {
+    if (!state.user || !state.profile) return;
+    try {
+      await loadCache();
+      if (["overview","attendance","reports"].includes(state.view)) await renderView();
+    } catch (err) {
+      console.warn("Attendance dashboard refresh failed:", err?.message || err);
+    }
+  }
+
   function subscribeAttendanceUpdates() {
     if (state.attendanceChannel) {
       sb.removeChannel(state.attendanceChannel);
@@ -149,15 +159,7 @@
       state.attendanceRefreshTimer = null;
     }
     if (!state.user || !state.profile) return;
-    const refresh = async () => {
-      if (!state.user || !state.profile) return;
-      try {
-        await loadCache();
-        if (["overview","attendance","reports"].includes(state.view)) await renderView();
-      } catch (err) {
-        console.warn("Live attendance refresh failed:", err?.message || err);
-      }
-    };
+    const refresh = refreshAttendanceDashboard;
     state.attendanceChannel = sb.channel("attendly-attendance-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "attendance_records" }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "staff_attendance_records" }, refresh)
@@ -166,7 +168,11 @@
           console.warn("Live attendance updates unavailable; using periodic refresh.");
         }
       });
-    state.attendanceRefreshTimer = setInterval(refresh, 30000);
+    state.attendanceRefreshTimer = setInterval(refresh, 10000);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") refresh();
+    });
   }
 
   async function loadSession(user) {
@@ -412,6 +418,8 @@
     counts.forEach((c,i)=>{const end=start+(c.value/total)*Math.PI*2;ctx.beginPath();ctx.arc(cx,cy,r,start,end);ctx.arc(cx,cy,inner,end,start,true);ctx.closePath();ctx.fillStyle=colors[i];ctx.fill();start=end;});
   }
   async function renderOverview() {
+    // Always fetch the latest attendance rows before calculating dashboard KPIs.
+    await loadCache();
     const role=state.profile.role,records=filteredRecords(),allToday=records.filter(r=>r.attendance_date===today()),present=allToday.filter(r=>r.status==="present"||r.status==="late").length;
     const attendancePct=allToday.length?Math.round(present/allToday.length*100):0;
     let staffToday=[];
@@ -576,7 +584,7 @@
     if(!isHod&&!(isTeachingStaff(staff)||staff.institutional_role==="hod"||staff.role==="hod"))throw new Error("Choose an active Teacher, Staff or HOD account.");
     const {error}=await sb.from("staff_attendance_records").upsert({staff_id,attendance_date,status,notes,marked_by:state.user.id},{onConflict:"staff_id,attendance_date"});
     if(error)throw error;
-    toast("Staff attendance saved.");await loadRecentStaffAttendance();if(state.view==="overview")await renderView();else if(state.profile?.role==="admin")await loadAdminOverallAttendance().catch(e=>console.warn("Could not refresh Admin attendance table",e));
+    toast("Staff attendance saved.");await loadCache();await loadRecentStaffAttendance();if(state.profile?.role==="admin")await loadAdminOverallAttendance().catch(e=>console.warn("Could not refresh Admin attendance table",e));if(state.view==="overview")await renderView();
   }
   async function loadRoster() {
     if(state.profile?.role!=="teacher"||state.profile?.institutional_role==="hod") throw new Error("Only regular teachers can take student attendance. HOD and Admin have read-only overall attendance access.");
