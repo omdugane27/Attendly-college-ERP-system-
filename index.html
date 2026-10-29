@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#111827">
   <meta name="description" content="Attendly — College ERP and attendance management for Admin, HOD, Teachers and Students">
   <title>Attendly — College ERP & Attendance</title>
-  <link rel="stylesheet" href="./styles.css?v=attendly-ui-20261029-05">
+  <link rel="stylesheet" href="./styles.css?v=attendly-ui-20261029-06">
   <style>
   #signup-fields.signup-grid{display:grid;grid-template-columns:1fr;gap:7px;margin:14px 0}
   #signup-fields.signup-grid label{font-size:12px;font-weight:650;color:#475569;margin-top:4px}
@@ -20,7 +20,9 @@
 </head>
 <body>
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
-  <section id="auth-screen" class="auth-screen">
+  <div id="public-home" class="public-home">
+<header class="public-topbar"><a class="public-brand" href="#top"><img src="./logo-light.svg?v=attendly-brand-20261029-04" alt="Attendly"><span><b>Attendly</b><small>COLLEGE ERP & ATTENDANCE SYSTEM</small></span></a><nav class="public-links"><a href="#top">Home</a><a href="#about">About</a><a href="#features">Features</a><a href="#contact">Contact</a></nav><div class="public-tools"><button id="public-theme" type="button">☼ / ☾</button><a class="pages-status" href="https://omdugane27.github.io/Attendly-college-ERP-system-/" target="_blank" rel="noopener"><span></span><b>Live on GitHub Pages</b><small>Open Attendly ↗</small></a></div></header>
+<nav id="features" class="feature-ribbon"><a href="#student-preview"><span>♟</span>Student<br>Management</a><a href="#student-preview"><span>▣</span>Attendance<br>Tracking</a><a href="#teacher-preview"><span>▤</span>Academic<br>Management</a><a href="#admin-preview"><span>▧</span>Examinations<br>& Results</a><a href="#services-preview"><span>▤</span>Certificates<br>& Services</a><a href="#services-preview"><span>☏</span>Complaints<br>& Support</a></nav><section id="auth-screen" class="auth-screen">
     <div class="auth-brand-panel">
       <a class="brand brand-light" href="#"><img class="brand-logo" src="./logo-light.svg?v=attendly-brand-20261029-04" alt="Attendly College ERP"></a>
       <div class="auth-pitch">
@@ -62,7 +64,11 @@
     </div>
   </section>
 
-  <div id="app-screen" class="app-screen hidden">
+<section class="role-preview-section" id="about"><div class="preview-heading"><span class="preview-eyebrow">ONE CAMPUS · EVERY ROLE</span><h2>A connected workspace for your entire college</h2><p>Role-based dashboards for administrators, HODs, faculty and students — powered by the existing Supabase database.</p></div><div class="role-preview-grid">
+<article class="role-preview admin-preview" id="admin-preview"><div class="preview-side"><b>◈ Attendly</b><span class="selected">▦ Dashboard</span><span>♟ Students</span><span>♙ Faculty & Staff</span><span>▤ Academics</span><span>▣ Attendance</span><span>▧ Reports</span></div><div class="preview-main"><div class="preview-top"><span>Administrator workspace</span><span class="preview-avatar">A</span></div><h3>Good morning, Admin</h3><p>Institution-wide overview</p><div class="preview-kpis"><div><small>Total students</small><b>Live data</b></div><div><small>Faculty</small><b>Live data</b></div><div><small>Classes</small><b>Live data</b></div></div><div class="preview-chart"><b>Attendance overview</b><div class="chart-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div></article>
+<article class="role-preview" id="student-preview"><div class="role-preview-title"><span class="role-icon student-icon">♟</span><div><h3>Student portal</h3><p>Attendance, subjects, timetable, certificates and leave requests</p></div></div><div class="mini-stat-row"><div><small>Attendance</small><b>My records</b></div><div><small>Subjects</small><b>My classes</b></div></div><div class="mini-progress"><span></span></div><div class="mini-list"><span>Today's classes <b>View timetable →</b></span><span>Certificate requests <b>Track status →</b></span><span>Complaints & support <b>Open inbox →</b></span></div></article>
+<article class="role-preview" id="teacher-preview"><div class="role-preview-title"><span class="role-icon teacher-icon">▣</span><div><h3>Teacher portal</h3><p>Assigned classes, attendance register, timetable and student progress</p></div></div><div class="mini-stat-row"><div><small>My classes</small><b>Assigned</b></div><div><small>Attendance</small><b>By session</b></div></div><div class="mini-progress teacher-progress"><span></span></div><div class="mini-list"><span>Class attendance <b>Record securely →</b></span><span>Student directory <b>View students →</b></span><span>Complaints & leave <b>Respond →</b></span></div></article>
+<article class="role-preview" id="services-preview"><div class="role-preview-title"><span class="role-icon hod-icon">◇</span><div><h3>HOD & campus services</h3><p>Department monitoring, staff attendance, approvals and service requests</p></div></div><div class="mini-list"><span>Department attendance <b>Review →</b></span><span>Certificate approvals <b>HOD + Admin →</b></span><span>Announcements <b>Publish →</b></span><span>Complaint inbox <b>Track status →</b></span></div></article></div><footer class="public-footer" id="contact"><span>Attendly · College ERP & Attendance</span><span>GitHub Pages hosting · Supabase database · Responsive UI</span><a href="https://github.com/omdugane27/Attendly-college-ERP-system-" target="_blank" rel="noopener">View source on GitHub ↗</a></footer></section></div>\n  <div id="app-screen" class="app-screen hidden">
     <aside id="sidebar" class="sidebar">
       <div class="sidebar-brand"><a class="brand brand-dark" href="#"><img class="brand-logo" src="./logo.svg" alt="Attendly College ERP"></a><button id="sidebar-close" class="icon-button mobile-only" aria-label="Close menu">×</button></div>
       <div class="workspace-label">WORKSPACE</div>
@@ -97,6 +103,6 @@
     </main>
   </div>
   <dialog id="modal" class="modal"><div class="modal-head"><div><div id="modal-eyebrow" class="eyebrow">WORKSPACE</div><h2 id="modal-title">Add new</h2></div><button id="modal-close" class="icon-button" aria-label="Close dialog">×</button></div><div id="modal-content"></div></dialog>
-  <script src="./app-role-id-fix.js?v=supabase-org-switch-20261029-05"></script>
-</body>
+  <script src="./app-role-id-fix.js?v=github-pages-erp-ui-20261029-06"></script>
+<script>document.getElementById("public-theme")?.addEventListener("click",()=>document.body.classList.toggle("public-dark"));</script>\n</body>
 </html>
