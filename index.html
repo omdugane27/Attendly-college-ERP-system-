@@ -22,7 +22,19 @@
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
   <div id="top" class="public-home">
 <header class="public-topbar"><a class="public-brand" href="#top"><img src="./logo-light.svg?v=attendly-brand-20261029-04" alt="Attendly"><span><b>Attendly</b><small>COLLEGE ERP & ATTENDANCE SYSTEM</small></span></a><nav class="public-links"><a href="#top">Home</a><a href="#about">About</a><a href="#features">Features</a><a href="#contact">Contact</a></nav><div class="public-tools"><button id="public-theme" type="button">☼ / ☾</button><a class="pages-status" href="https://omdugane27.github.io/Attendly-college-ERP-system-/" target="_blank" rel="noopener"><span></span><b>Live on GitHub Pages</b><small>Open Attendly ↗</small></a></div></header>
-<nav id="features" class="feature-ribbon"><a href="#student-preview"><span>♟</span>Student<br>Management</a><a href="#student-preview"><span>▣</span>Attendance<br>Tracking</a><a href="#teacher-preview"><span>▤</span>Academic<br>Management</a><a href="#admin-preview"><span>▧</span>Examinations<br>& Results</a><a href="#services-preview"><span>▤</span>Certificates<br>& Services</a><a href="#services-preview"><span>☏</span>Complaints<br>& Support</a></nav><section id="auth-screen" class="auth-screen">
+<nav id="features" class="feature-ribbon" aria-label="Attendly modules">
+<a href="#feature-details" data-feature="students" aria-controls="feature-detail-content"><span>♟</span>Student<br>Management</a>
+<a href="#feature-details" data-feature="attendance" aria-controls="feature-detail-content"><span>▣</span>Attendance<br>Tracking</a>
+<a href="#feature-details" data-feature="academics" aria-controls="feature-detail-content"><span>▤</span>Academic<br>Management</a>
+<a href="#feature-details" data-feature="exams" aria-controls="feature-detail-content"><span>▧</span>Examinations<br>& Results</a>
+<a href="#feature-details" data-feature="certificates" aria-controls="feature-detail-content"><span>▤</span>Certificates<br>& Services</a>
+<a href="#feature-details" data-feature="complaints" aria-controls="feature-detail-content"><span>☏</span>Complaints<br>& Support</a>
+</nav>
+<section id="feature-details" class="feature-details" aria-live="polite">
+<div class="feature-details-heading"><span class="preview-eyebrow">EXPLORE ATTENDLY</span><h2 id="feature-detail-title">Choose a module to see what it includes</h2><p id="feature-detail-summary">Tap any feature above. Its details will appear here.</p></div>
+<div id="feature-detail-content" class="feature-detail-content"><div class="feature-detail-placeholder"><span>↟</span><b>All modules in one workspace</b><p>Select a feature above to view its details.</p></div></div>
+<div class="feature-detail-actions"><a class="button button-primary" href="#auth-screen">Sign in to Attendly <span>→</span></a><span>Some modules require an authorised account and role.</span></div>
+</section><section id="auth-screen" class="auth-screen">
     <div class="auth-brand-panel">
       <a class="brand brand-light" href="#"><img class="brand-logo" src="./logo-light.svg?v=attendly-brand-20261029-04" alt="Attendly College ERP"></a>
       <div class="auth-pitch">
@@ -116,6 +128,46 @@
   };
   applyTheme(false);
   themeButton.addEventListener("click", () => applyTheme(!document.body.classList.contains("public-dark")));
+
+const featureContent = {
+  students: {title:"Student Management",summary:"Manage student profiles and access requests in one place.",items:["Student registration and account approval","Student ID and profile information","Role-based access to student records","Searchable student directory"]},
+  attendance: {title:"Attendance Tracking",summary:"Record attendance by class or session and review trends.",items:["Class and session attendance registers","Student, teacher, staff and HOD attendance views","Attendance summaries and percentage reports","Review attendance history and exceptions"]},
+  academics: {title:"Academic Management",summary:"Organise courses, subjects, classes and department work.",items:["Course and subject organisation","Department and faculty assignment","Class timetable and academic records","Role-based academic overview"]},
+  exams: {title:"Examinations & Results",summary:"Keep exam-related information organised for authorised users.",items:["Exam schedule and academic notices","Exam and result record views where configured","Eligibility and attendance threshold information","Administrative review tools"]},
+  certificates: {title:"Certificates & Services",summary:"Track certificate requests and other campus services.",items:["Submit and track certificate requests","HOD and Admin approval workflow","Leave, timetable and announcement services","View request status and available documents"]},
+  complaints: {title:"Complaints & Support",summary:"Submit and follow up on complaints through role-based access.",items:["Student, Teacher and HOD complaint submission","Complaint inbox for authorised staff","Track complaint status and updates","Admin complaint submission is disabled"]}
+};
+document.querySelectorAll("#features [data-feature]").forEach((link) => {
+  link.addEventListener("click", () => {
+    const item = featureContent[link.dataset.feature];
+    if (!item) return;
+    document.querySelectorAll("#features [data-feature]").forEach((node) => {
+      const active = node === link;
+      node.classList.toggle("feature-active", active);
+      if (active) node.setAttribute("aria-current", "true");
+      else node.removeAttribute("aria-current");
+    });
+    document.getElementById("feature-detail-title").textContent = item.title;
+    document.getElementById("feature-detail-summary").textContent = item.summary;
+    const panel = document.getElementById("feature-detail-content");
+    panel.replaceChildren();
+    const list = document.createElement("ul");
+    list.className = "feature-detail-list";
+    item.items.forEach((label) => {
+      const li = document.createElement("li");
+      const mark = document.createElement("span");
+      mark.className = "feature-check";
+      mark.textContent = "✓";
+      const text = document.createElement("span");
+      text.textContent = label;
+      li.append(mark, text);
+      list.append(li);
+    });
+    panel.append(list);
+    document.getElementById("feature-details").scrollIntoView({behavior:"smooth",block:"start"});
+  });
+});
+
 })();
 </script>\n</body>
 </html>
