@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#111827">
   <meta name="description" content="Attendly — College ERP and attendance management for Admin, HOD, Teachers and Students">
   <title>Attendly — College ERP & Attendance</title>
-  <link rel="stylesheet" href="./styles.css?v=attendly-feature-modal-20261029-02">
+  <link rel="stylesheet" href="./styles.css?v=attendly-no-detail-panel-20261029-01">
   <style>
   #signup-fields.signup-grid{display:grid;grid-template-columns:1fr;gap:7px;margin:14px 0}
   #signup-fields.signup-grid label{font-size:12px;font-weight:650;color:#475569;margin-top:4px}
@@ -42,11 +42,7 @@
 <p class="feature-modal-note">Access to live records depends on your account role and permissions.</p>
 </section>
 </div>
-<section id="feature-details" class="feature-details" aria-live="polite">
-<div class="feature-details-heading"><span class="preview-eyebrow">EXPLORE ATTENDLY</span><h2 id="feature-detail-title">Choose a module to see what it includes</h2><p id="feature-detail-summary">Tap any feature above. Its details will appear here.</p></div>
-<div id="feature-detail-content" class="feature-detail-content"><div class="feature-detail-placeholder"><span>↟</span><b>All modules in one workspace</b><p>Select a feature above to view its details.</p></div></div>
-<div class="feature-detail-actions"><a class="button button-primary" href="#auth-screen">Sign in to Attendly <span>→</span></a><span>Some modules require an authorised account and role.</span></div>
-</section><section id="auth-screen" class="auth-screen">
+<section id="auth-screen" class="auth-screen">
     <div class="auth-brand-panel">
       <a class="brand brand-light" href="#"><img class="brand-logo" src="./logo-light.svg?v=attendly-brand-20261029-04" alt="Attendly College ERP"></a>
       <div class="auth-pitch">
@@ -172,23 +168,6 @@ document.querySelectorAll("#features [data-feature]").forEach((link) => {
       if (active) node.setAttribute("aria-current", "true");
       else node.removeAttribute("aria-current");
     });
-    document.getElementById("feature-detail-title").textContent = item.title;
-    document.getElementById("feature-detail-summary").textContent = item.summary;
-    const panel = document.getElementById("feature-detail-content");
-    panel.replaceChildren();
-    const list = document.createElement("ul");
-    list.className = "feature-detail-list";
-    item.items.forEach((label) => {
-      const li = document.createElement("li");
-      const mark = document.createElement("span");
-      mark.className = "feature-check";
-      mark.textContent = "✓";
-      const text = document.createElement("span");
-      text.textContent = label;
-      li.append(mark, text);
-      list.append(li);
-    });
-    panel.append(list);
     if (featureModal) {
       document.getElementById("feature-modal-title").textContent = item.title;
       document.getElementById("feature-modal-summary").textContent = item.summary;
@@ -208,7 +187,6 @@ document.querySelectorAll("#features [data-feature]").forEach((link) => {
       document.body.classList.add("feature-modal-open");
       featureModal.querySelector("[data-feature-close]")?.focus();
     }
-    document.getElementById("feature-details").scrollIntoView({behavior:"smooth",block:"start"});
   });
 });
 
