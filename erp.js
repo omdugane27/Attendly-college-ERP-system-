@@ -40,8 +40,23 @@
     admin_approved:"Admin approved",class_id:"Class ID",start_date:"Start",end_date:"End",reason:"Reason",
     weekday:"Weekday",start_time:"Start time",end_time:"End time",room:"Room",title:"Title",body:"Message"
   };
+  function canSeeTab(tab) {
+    const role = String(profile?.role || "").toLowerCase();
+    const institutional = String(profile?.institutional_role || "").toLowerCase();
+    const admin = role === "admin" || institutional === "system_admin";
+    const hod = institutional === "hod" || role === "hod";
+    if (admin) return true;
+    const allowed = hod
+      ? ["overview","students","courses","classes","attendance","staff-attendance","complaints","certificates","leave","timetable","announcements"]
+      : role === "teacher"
+        ? ["overview","courses","classes","attendance","complaints","certificates","leave","timetable","announcements"]
+        : ["overview","courses","attendance","complaints","certificates","leave","timetable","announcements"];
+    return allowed.includes(tab.id);
+  }
   function renderTabs() {
-    $("erp-tabs").innerHTML = tabs.map(t =>
+    const visibleTabs = tabs.filter(canSeeTab);
+    if (!visibleTabs.some(t => t.id === active)) active = "overview";
+    $("erp-tabs").innerHTML = visibleTabs.map(t =>
       '<button type="button" data-erp-tab="'+t.id+'" class="'+(active===t.id?'active':'')+'">'+esc(t.label)+'</button>'
     ).join("");
     $("erp-tabs").querySelectorAll("[data-erp-tab]").forEach(button => {
@@ -105,7 +120,7 @@
     status("Connected · showing "+data.length+" record(s) from "+tab.table+".");
   }
   async function renderActive() {
-    const tab = tabs.find(t=>t.id===active) || tabs[0];
+    const tab = tabs.find(t=>t.id===active && canSeeTab(t)) || tabs.find(t=>t.id==="overview");
     try {
       if (tab.id === "overview") await renderOverview();
       else await renderTable(tab);
