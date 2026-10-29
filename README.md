@@ -1,6 +1,6 @@
-# Attendly — Student Attendance Management System
+# Attendly — College ERP & Attendance Management System
 
-A responsive, mobile-friendly student attendance app built with HTML/CSS/JavaScript and Supabase Auth + PostgreSQL. GitHub Pages is the intended static hosting target; Android Acode can be used for local editing.
+A responsive college ERP and attendance application built with HTML/CSS/JavaScript and the existing Supabase Auth + PostgreSQL project. The UI layer has been refined while preserving existing application flows and database configuration. GitHub Pages is the intended static hosting target; Android Acode can be used for local editing.
 
 ## Main features
 - Secure sign-up and email/password login with Supabase Auth
