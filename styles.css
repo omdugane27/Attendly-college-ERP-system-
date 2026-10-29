@@ -346,3 +346,15 @@ body.sidebar-collapsed .main-area{margin-left:0;}}
 @media(min-width:681px){.main-area{transition:margin-left .28s cubic-bezier(.22,.75,.25,1)}body.sidebar-collapsed .sidebar{transform:translateX(-105%)}body.sidebar-collapsed .main-area{margin-left:0}}
 @media(max-width:680px){.sidebar{transform:translateX(-105%)}.sidebar.mobile-open{transform:translateX(0);box-shadow:20px 0 70px #10203b2b}.main-area{transition:none}}
 @media(prefers-reduced-motion:reduce){.nav-toggle,.nav-toggle .hamburger-lines span,.sidebar,.sidebar-scrim,.main-area{transition:none!important;animation:none!important}}
+
+
+/* Attendly professional UI refinement — keeps existing frontend behavior, routes, and backend integrations intact. */
+:root{--ink:#17243b;--sub:#64748b;--muted:#94a3b8;--line:#e5eaf2;--paper:#fff;--bg:#f4f7fc;--navy:#0d1b2d;--blue:#1677f9;--blue-dark:#0d5fda;--blue-light:#eaf3ff;--green:#138a62;--green-bg:#e6f8ef;--shadow:0 14px 38px rgba(24,46,82,.07);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);letter-spacing:0}
+button,input,select,textarea{font-family:inherit}
+.panel,.card,.erp-card,.auth-card,.stat-card,.dashboard-card{border-color:#e6ebf3;box-shadow:0 8px 28px rgba(24,46,82,.055);border-radius:16px}
+button,.button,.btn{transition:transform .16s ease,box-shadow .16s ease,background .16s ease}
+button:hover,.button:hover,.btn:hover{filter:brightness(.985)}
+input,select,textarea{border-radius:10px}
+:focus-visible{outline-color:#8abaff}
+@media(max-width:760px){.auth-screen{grid-template-columns:1fr;min-height:100dvh}.auth-brand-panel{min-height:220px}.brand-logo{width:min(180px,70vw)}.erp-shell{padding:14px}.erp-grid{grid-template-columns:1fr}.college{padding:14px}}
