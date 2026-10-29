@@ -1,8 +1,8 @@
 /* Attendly ERP portal — uses the existing Attendly Supabase project and its RLS policies. */
 (() => {
   "use strict";
-  const SUPABASE_URL = "https://zizhlvnqipytczkmmtxr.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_nhpDbc5sFfncXO-XETpIzw_7RpcNpuk";
+  const SUPABASE_URL = "https://ysgiqxzexvbmwuzuywmc.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_zhL5wtEyFOhDl61_XAB85A_hsxUbsZ8";
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
