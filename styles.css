@@ -358,3 +358,65 @@ button:hover,.button:hover,.btn:hover{filter:brightness(.985)}
 input,select,textarea{border-radius:10px}
 :focus-visible{outline-color:#8abaff}
 @media(max-width:760px){.auth-screen{grid-template-columns:1fr;min-height:100dvh}.auth-brand-panel{min-height:220px}.brand-logo{width:min(180px,70vw)}.erp-shell{padding:14px}.erp-grid{grid-template-columns:1fr}.college{padding:14px}}
+
+
+/* === Attendly visual refresh: unified college ERP dashboard === */
+:root{
+ --ink:#10213b;--sub:#62748d;--muted:#8da0b8;--line:#e2eaf4;--paper:#fff;--bg:#f2f6fc;
+ --navy:#0c1b30;--blue:#0878f9;--blue-dark:#075ed1;--blue-light:#e8f2ff;
+ --green:#0d9b73;--green-bg:#e4f8ef;--red:#d94c62;--red-bg:#fff0f2;
+ --amber:#e99a18;--amber-bg:#fff5df;--shadow:0 12px 34px rgba(23,52,91,.075);
+ font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+html,body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{background:#f2f6fc;color:#10213b}
+.auth-screen{background:#0c1b30;gap:0;grid-template-columns:minmax(360px,1fr) minmax(400px,.88fr)}
+.auth-brand-panel{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 15% 15%,#317ac8 0,transparent 38%),linear-gradient(145deg,#0b1b31 0%,#174f8c 54%,#a9c7e8 100%);padding:clamp(28px,5vw,68px)}
+.auth-brand-panel:before{content:"";position:absolute;z-index:-1;left:-7%;right:-4%;bottom:-4%;height:47%;background:linear-gradient(165deg,transparent 0 13%,#0d2b46 13% 17%,#153f5c 17% 100%);clip-path:polygon(0 38%,13% 12%,25% 30%,37% 0,55% 24%,69% 10%,100% 35%,100% 100%,0 100%);opacity:.95}
+.auth-brand-panel:after{content:"";position:absolute;z-index:-1;right:7%;bottom:7%;width:43%;height:43%;border:1px solid #dbeafe66;border-radius:22px;transform:skewY(-8deg);background:linear-gradient(140deg,#dbeafe30,#ffffff08);box-shadow:0 20px 70px #06152b55}
+.auth-brand-panel .brand-logo{width:min(300px,90%);filter:drop-shadow(0 4px 18px #071a3060)}
+.auth-pitch h1{font-size:clamp(34px,4vw,54px);line-height:1.06;letter-spacing:-1.7px}
+.auth-pitch p{max-width:430px;color:#e1edff}
+.auth-form-panel{background:linear-gradient(145deg,#f7faff,#eaf2fc);padding:clamp(22px,4vw,60px)}
+.auth-form-wrap{max-width:470px;border:1px solid #e2eaf5;border-radius:24px;background:#ffffffed;box-shadow:0 24px 75px #0c28551a;padding:clamp(24px,3vw,40px)}
+.auth-form-heading h2{font-size:30px;letter-spacing:-.9px}
+.auth-form-wrap input:not([type=checkbox]),.auth-form-wrap select{min-height:46px;border:1px solid #dce5f1;border-radius:11px;background:#fbfdff}
+.auth-form-wrap input:focus,.auth-form-wrap select:focus{border-color:#1681ff;box-shadow:0 0 0 3px #1681ff1c}
+.auth-form-wrap button[type=submit],.auth-form-wrap .button-primary{border-radius:11px;background:linear-gradient(100deg,#0878f9,#1765e8);box-shadow:0 8px 18px #0878f92b}
+.sidebar{background:linear-gradient(180deg,#0b1b30,#102a45);border-right:1px solid #1e3856;color:#dce9fb;box-shadow:8px 0 28px #0c1b3010}
+.sidebar .brand,.sidebar .brand-logo{color:#fff}
+.nav-item{border-radius:10px;margin:3px 10px;padding:11px 13px;color:#c2d1e5;transition:background .18s ease,color .18s ease,transform .18s ease}
+.nav-item:hover{background:#ffffff12;color:#fff;transform:translateX(2px)}
+.nav-item.active{background:linear-gradient(100deg,#0878f9,#1167e7);color:#fff;box-shadow:0 8px 20px #0878f936}
+.sidebar-help{background:#ffffff0b;border:1px solid #ffffff14;border-radius:13px}
+.side-user{border-top:1px solid #ffffff1c}
+.main-area{background:#f2f6fc}
+.topbar{background:#ffffffed;border-bottom:1px solid #e2eaf4;backdrop-filter:blur(16px);min-height:70px}
+.breadcrumbs{color:#6b7c93}
+.topbar-actions .button,.icon-button{border-radius:10px}
+.content-wrap{max-width:1600px;padding:clamp(18px,2.2vw,34px)}
+.page-heading{align-items:center;margin-bottom:24px}
+.page-heading h1{font-size:clamp(25px,2.4vw,34px);font-weight:780;letter-spacing:-1.1px;color:#10213b}
+.page-heading p{color:#71829a}
+.eyebrow{letter-spacing:1.3px;color:#1677e8}
+.stats-grid{gap:14px;margin-bottom:18px}
+.stat-card,.panel{background:#fff;border:1px solid #e3eaf4;border-radius:17px;box-shadow:0 8px 28px rgba(19,50,91,.045)}
+.stat-card{padding:19px;overflow:hidden}
+.stat-card:after{background:linear-gradient(135deg,#e8f2ff,#f6faff);opacity:.95}
+.stat-label{font-size:12px;font-weight:700;color:#71829a}
+.stat-value{font-size:clamp(25px,2.2vw,33px);letter-spacing:-1px;color:#10213b}
+.stat-icon{border-radius:12px;background:#e7f1ff;color:#0878f9}
+.panel{padding:20px;margin-bottom:16px}
+.panel-title{font-size:16px;font-weight:760;letter-spacing:-.25px;color:#142844}
+.panel-subtitle{color:#7b8ca3}
+#page-content .table-wrap{border:1px solid #e4ebf4;border-radius:13px;overflow:auto}
+#page-content .table-wrap table{border-collapse:separate;border-spacing:0;min-width:560px}
+#page-content .table-wrap th{background:#f4f8fd;color:#60738c;font-size:10px;letter-spacing:.8px}
+#page-content .table-wrap td{border-bottom:1px solid #edf1f7;padding:13px 14px}
+#page-content .table-wrap tbody tr:hover td{background:#f7faff}
+#page-content .form-grid input,#page-content .form-grid select,#page-content .form-grid textarea,#page-content input:not([type=checkbox]):not([type=radio]),#page-content select,#page-content textarea{border-radius:10px;border-color:#dce5f0}
+.button-primary,.button-blue{background:linear-gradient(100deg,#0878f9,#1765e8);border-color:#0878f9;color:#fff;box-shadow:0 5px 14px #0878f91c}
+.page-footer{color:#8796aa}
+.modal{border:1px solid #e2eaf4;border-radius:20px;box-shadow:0 28px 90px #0b1b3050}
+@media(max-width:900px){.auth-screen{grid-template-columns:1fr}.auth-brand-panel{min-height:320px}.auth-form-panel{padding:22px}.auth-form-wrap{margin:0 auto}.content-wrap{padding:18px}.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.auth-brand-panel{min-height:245px;padding:24px}.auth-pitch h1{font-size:34px}.auth-form-wrap{padding:22px;border-radius:18px}.topbar{padding:10px 12px}.topbar-actions{gap:6px}.topbar-actions .profile-button-copy{display:none}.page-heading{align-items:flex-start}.stats-grid{grid-template-columns:1fr 1fr;gap:9px}.stat-card{padding:13px}.stat-value{font-size:23px}.panel{padding:14px}}
