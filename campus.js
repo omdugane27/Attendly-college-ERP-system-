@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-const URL="https://ysgiqxzexvbmwuzuywmc.supabase.co", KEY="sb_publishable_zhL5wtEyFOhDl61_XAB85A_hsxUbsZ8";
+const URL="https://zizhlvnqipytczkmmtxr.supabase.co", KEY="sb_publishable_nhpDbc5sFfncXO-XETpIzw_7RpcNpuk";
 const db=window.supabase.createClient(URL,KEY), $=id=>document.getElementById(id);
 let user=null, profile=null, tab="leave", classes=[], records=[];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
