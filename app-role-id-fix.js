@@ -1040,10 +1040,26 @@
         if(state.profile.role!=="admin")throw new Error("Admin access required.");
         const id=target.dataset.userId;if(id===state.user.id)throw new Error("You cannot deactivate your own account.");
         const next=target.dataset.active!=="false"?false:true;
-        if(!confirm(next?"Reactivate this account?":"Deactivate this account?"))return;
-        const {error}=await sb.from("profiles").update({is_active:next}).eq("id",id);
-        if(error)throw error;
-        toast(next?"Account reactivated.":"Account marked inactive. Login blocking still requires server-side enforcement.");
+        if(!confirm(next?"Reactivate this account and restore its archived directory details?":"Deactivate this account?"))return;
+        if(next) {
+          const {data:archive,error:archiveError}=await sb.from("account_deletion_archive")
+            .select("original_email,original_name,original_role,archived_at")
+            .eq("original_user_id",id).order("archived_at",{ascending:false}).limit(1).maybeSingle();
+          if(archiveError)throw new Error("Could not read archived account details: "+archiveError.message);
+          const patch={is_active:true};
+          if(archive) {
+            if(archive.original_email)patch.email=archive.original_email;
+            if(archive.original_name)patch.full_name=archive.original_name;
+            if(archive.original_role)patch.role=archive.original_role;
+          }
+          const {error}=await sb.from("profiles").update(patch).eq("id",id);
+          if(error)throw new Error("Could not restore archived profile details: "+error.message);
+          toast(archive?"Account reactivated; archived name, email and role restored in records.":"Account reactivated.");
+        } else {
+          const {error}=await sb.from("profiles").update({is_active:false}).eq("id",id);
+          if(error)throw error;
+          toast("Account marked inactive.");
+        }
         await refreshAndRender();
       } else if(action==="permanent-delete") {
         if(state.profile.role!=="admin")throw new Error("Admin access required.");
