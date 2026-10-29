@@ -1,8 +1,8 @@
 /* Attendly client. Database authorization is enforced by Supabase RLS, not just UI roles. */
 (function () {
   "use strict";
-  const SUPABASE_URL = "https://ysgiqxzexvbmwuzuywmc.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_zhL5wtEyFOhDl61_XAB85A_hsxUbsZ8";
+  const SUPABASE_URL = "https://zizhlvnqipytczkmmtxr.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_nhpDbc5sFfncXO-XETpIzw_7RpcNpuk";
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyB-icF6zYcvQLKM6ne9OtyzlAOKwbDWMAY",
