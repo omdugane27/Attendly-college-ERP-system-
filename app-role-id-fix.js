@@ -611,12 +611,25 @@
     const rows=[...document.querySelectorAll(".roster-row")];
     if(!rows.length)throw new Error("Load a student roster first.");
     const payload=rows.map(row=>({class_subject_id:aid,student_id:row.dataset.studentId,attendance_date:date,status:row.querySelector("input[type=radio]:checked")?.value||"present",notes:row.querySelector(".attendance-note").value.trim(),marked_by:state.user.id}));
-    const btn=document.querySelector('[data-action="save-roster"]');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Saving…';
-    const {error}=await sb.from("attendance_records").upsert(payload,{onConflict:"class_subject_id,student_id,attendance_date"});
-    btn.disabled=false;btn.textContent="Save attendance";
-    if(error)throw error;
-    toast(`Attendance saved for ${payload.length} student(s).`);
-    await loadCache();await loadRoster();await renderAttendance();
+    const btn=document.querySelector('[data-action="save-roster"]');
+    if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Saving…';}
+    let savedRows=[];
+    try {
+      const result=await sb.from("attendance_records")
+        .upsert(payload,{onConflict:"class_subject_id,student_id,attendance_date"})
+        .select("id,attendance_date,status,student_id");
+      if(result.error) throw result.error;
+      savedRows=result.data||[];
+      if(savedRows.length!==payload.length) {
+        throw new Error("Supabase did not confirm every attendance row. Expected "+payload.length+", confirmed "+savedRows.length+". Check attendance table permissions and class enrollment.");
+      }
+    } finally {
+      if(btn){btn.disabled=false;btn.textContent="Save attendance";}
+    }
+    toast(`Verified: ${savedRows.length} attendance record(s) saved for ${date}.`);
+    await loadCache();
+    await loadRoster();
+    await renderAttendance();
   }
   async function showStudentIdCard(userId) {
     if (state.profile?.role !== "admin") throw new Error("Only Admin can generate ID cards.");
