@@ -1,18 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 126" role="img" aria-labelledby="title desc">
-<title id="title">CampusFlow College ERP</title>
-<desc id="desc">CampusFlow logo with a graduation cap, campus building and open book in navy and teal</desc>
-<defs><linearGradient id="teal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#20d6bd"/><stop offset="1" stop-color="#078b91"/></linearGradient><linearGradient id="navy" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#123d69"/><stop offset="1" stop-color="#071a33"/></linearGradient></defs>
-<g transform="translate(5 4)">
-<path d="M45 5 78 18 78 39C78 60 63 76 45 87 27 76 12 60 12 39V18Z" fill="url(#navy)"/>
-<path d="M10 43C11 18 28 2 45 2S79 18 80 43" fill="none" stroke="url(#teal)" stroke-width="5" stroke-linecap="round"/>
-<path d="M16 35 45 21 74 35 45 49Z" fill="url(#teal)"/>
-<path d="M26 41V53C37 61 53 61 64 53V41L45 51Z" fill="#092544"/>
-<path d="M22 56Q34 51 45 63Q56 51 68 56V69Q55 66 45 78Q35 66 22 69Z" fill="#fff"/>
-<path d="M45 63V78" stroke="#0b2545" stroke-width="2"/>
-<path d="M31 35 42 40 57 28" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-</g>
-<text x="100" y="53" font-family="Arial,Helvetica,sans-serif" font-size="38" font-weight="750" letter-spacing="-1.1" fill="#0b2545">Campus<tspan fill="url(#teal)">Flow</tspan></text>
-<path d="M100 67H405" stroke="#d3dde5" stroke-width="1"/>
-<path d="M140 88H185M320 88H365" stroke="#0a8790" stroke-width="1.5" stroke-linecap="round"/>
-<text x="252" y="93" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" letter-spacing="4" fill="#64748b">COLLEGE ERP</text>
-</svg>
+<title id="title">Attendly College ERP</title><desc id="desc">Attendly logo combining a graduation cap and open book in blue and navy</desc>
+<defs><linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#1677f9"/></linearGradient><linearGradient id="navy" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#193b69"/><stop offset="1" stop-color="#0d1b2d"/></linearGradient></defs>
+<g transform="translate(5 5)"><path d="M45 5 78 18 78 39C78 60 63 76 45 87 27 76 12 60 12 39V18Z" fill="url(#navy)"/><path d="M10 43C11 18 28 2 45 2S79 18 80 43" fill="none" stroke="url(#blue)" stroke-width="5" stroke-linecap="round"/><path d="M16 35 45 21 74 35 45 49Z" fill="url(#blue)"/><path d="M26 41V53C37 61 53 61 64 53V41L45 51Z" fill="#0d1b2d"/><path d="M22 56Q34 51 45 63Q56 51 68 56V69Q55 66 45 78Q35 66 22 69Z" fill="#fff"/><path d="M45 63V78" stroke="#0d1b2d" stroke-width="2"/><path d="M31 35 42 40 57 28" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="100" y="53" font-family="Arial,Helvetica,sans-serif" font-size="38" font-weight="750" letter-spacing="-1.1" fill="#0d1b2d">Attendly</text><path d="M100 67H405" stroke="#d3dde5" stroke-width="1"/><path d="M140 88H185M320 88H365" stroke="#1677f9" stroke-width="1.5" stroke-linecap="round"/><text x="252" y="93" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" letter-spacing="4" fill="#64748b">COLLEGE ERP</text></svg>
