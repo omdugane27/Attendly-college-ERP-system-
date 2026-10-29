@@ -21,12 +21,12 @@ A responsive college ERP and attendance application built with HTML/CSS/JavaScri
 
 ## Configure Supabase
 The app is currently configured for the dedicated project:
-- Project URL: `https://zizhlvnqipytczkmmtxr.supabase.co`
-- Publishable key: `sb_publishable_nhpDbc5sFfncXO-XETpIzw_7RpcNpuk`
+- Project URL: `https://ysgiqxzexvbmwuzuywmc.supabase.co`
+- Publishable key: use the `SUPABASE_KEY` publishable value currently configured in `app.js`, `campus.js`, `college.js`, and `erp.js`.
 
 The publishable key is intended for browser use. Never add a `service_role` or secret API key to client code.
 
-The current Supabase project has the schema already applied. For another new Supabase project, open SQL Editor and run all of `supabase/schema.sql`.
+The existing Supabase project is already configured in the frontend. Keep `app.js`, `campus.js`, `college.js`, and `erp.js` pointed at the same project. The base schema is in `schema.sql`; apply the applicable `upgrade-*.sql` scripts for the full ERP feature set on a new project. The compatibility migration `supabase/migrations/202610290001_restore_missing_attendly_panel_tables.sql` adds the complaint and certificate-request tables without deleting existing data.
 
 ### Create the first administrator
 1. Sign up through the web app.
