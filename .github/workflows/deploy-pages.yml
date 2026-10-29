@@ -1,4 +1,4 @@
-name: Deploy CampusFlow to GitHub Pages
+name: Deploy Attendly to GitHub Pages
 
 on:
   push:
@@ -22,6 +22,21 @@ jobs:
         uses: actions/checkout@v4
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
+      - name: Validate required pages and JavaScript syntax
+        run: |
+          test -f index.html
+          test -f app.js
+          test -f styles.css
+          test -f erp.html
+          test -f erp.js
+          test -f campus.html
+          test -f campus.js
+          test -f college.html
+          test -f college.js
+          node --check app.js
+          node --check erp.js
+          node --check campus.js
+          node --check college.js
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
