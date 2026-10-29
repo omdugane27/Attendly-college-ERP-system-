@@ -602,3 +602,16 @@ body.public-dark #public-home .feature-modal-actions .button-secondary{backgroun
 /* Admin directory email column and compact modal-only landing */
 .admin-email-cell{min-width:190px;overflow-wrap:anywhere;word-break:break-word;color:#31435e;font-size:12px}
 #public-home .feature-modal[hidden]{display:none!important}
+
+
+/* Hard guard: public landing must never show behind the authenticated workspace */
+/* Chrome/modern browsers: if the authenticated app is visible, suppress the public shell even if stale JS misses the toggle. */
+body:has(#app-screen:not(.hidden)) #public-home{display:none!important}
+body:has(#app-screen:not(.hidden)) #auth-screen{display:none!important}
+#app-screen.hidden{display:none!important}
+#app-screen:not(.hidden){display:flex;min-height:100vh}
+#app-screen:not(.hidden) .app-main{min-width:0;flex:1}
+@media(max-width:760px){
+ body:has(#app-screen:not(.hidden)) #app-screen:not(.hidden){width:100%;overflow-x:hidden}
+ body:has(#app-screen:not(.hidden)) #app-screen:not(.hidden) .main-content{min-width:0;max-width:100%}
+}
