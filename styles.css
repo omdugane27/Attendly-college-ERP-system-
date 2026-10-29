@@ -598,3 +598,7 @@ body.public-dark #public-home .feature-modal-actions .button-secondary{backgroun
 @keyframes feature-modal-in{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:520px){#public-home .feature-modal{padding:10px}#public-home .feature-modal-card{padding:22px 16px;border-radius:18px;max-height:90vh}#public-home .feature-modal-actions{flex-direction:column}#public-home .feature-modal-actions button{width:100%}}
 @media(prefers-reduced-motion:reduce){#public-home .feature-modal-card{animation:none}}
+
+/* Admin directory email column and compact modal-only landing */
+.admin-email-cell{min-width:190px;overflow-wrap:anywhere;word-break:break-word;color:#31435e;font-size:12px}
+#public-home .feature-modal[hidden]{display:none!important}
