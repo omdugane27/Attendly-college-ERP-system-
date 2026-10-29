@@ -20,7 +20,7 @@
 </head>
 <body>
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
-  <div id="public-home" class="public-home">
+  <div id="top" class="public-home">
 <header class="public-topbar"><a class="public-brand" href="#top"><img src="./logo-light.svg?v=attendly-brand-20261029-04" alt="Attendly"><span><b>Attendly</b><small>COLLEGE ERP & ATTENDANCE SYSTEM</small></span></a><nav class="public-links"><a href="#top">Home</a><a href="#about">About</a><a href="#features">Features</a><a href="#contact">Contact</a></nav><div class="public-tools"><button id="public-theme" type="button">☼ / ☾</button><a class="pages-status" href="https://omdugane27.github.io/Attendly-college-ERP-system-/" target="_blank" rel="noopener"><span></span><b>Live on GitHub Pages</b><small>Open Attendly ↗</small></a></div></header>
 <nav id="features" class="feature-ribbon"><a href="#student-preview"><span>♟</span>Student<br>Management</a><a href="#student-preview"><span>▣</span>Attendance<br>Tracking</a><a href="#teacher-preview"><span>▤</span>Academic<br>Management</a><a href="#admin-preview"><span>▧</span>Examinations<br>& Results</a><a href="#services-preview"><span>▤</span>Certificates<br>& Services</a><a href="#services-preview"><span>☏</span>Complaints<br>& Support</a></nav><section id="auth-screen" class="auth-screen">
     <div class="auth-brand-panel">
@@ -104,5 +104,18 @@
   </div>
   <dialog id="modal" class="modal"><div class="modal-head"><div><div id="modal-eyebrow" class="eyebrow">WORKSPACE</div><h2 id="modal-title">Add new</h2></div><button id="modal-close" class="icon-button" aria-label="Close dialog">×</button></div><div id="modal-content"></div></dialog>
   <script src="./app-role-id-fix.js?v=github-pages-erp-ui-20261029-06"></script>
-<script>document.getElementById("public-theme")?.addEventListener("click",()=>document.body.classList.toggle("public-dark"));</script>\n</body>
+<script>
+(() => {
+  const themeButton = document.getElementById("public-theme");
+  if (!themeButton) return;
+  const applyTheme = (isDark) => {
+    document.body.classList.toggle("public-dark", isDark);
+    themeButton.setAttribute("aria-pressed", String(isDark));
+    themeButton.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
+    themeButton.title = isDark ? "Switch to light theme" : "Switch to dark theme";
+  };
+  applyTheme(false);
+  themeButton.addEventListener("click", () => applyTheme(!document.body.classList.contains("public-dark")));
+})();
+</script>\n</body>
 </html>
