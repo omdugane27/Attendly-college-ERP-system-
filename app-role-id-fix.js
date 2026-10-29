@@ -31,7 +31,7 @@
   }
 
   const $ = (id) => document.getElementById(id);
-  const state = { user: null, profile: null, view: "overview", cache: { people: [], classes: [], subjects: [], assignments: [], enrollments: [], records: [] }, authMode: "login", reportRows: [], chartEvents: [] };
+  const state = { user: null, profile: null, view: "overview", cache: { people: [], classes: [], subjects: [], assignments: [], enrollments: [], records: [], staffRecords: [] }, authMode: "login", reportRows: [], chartEvents: [] };
   const escapeHtml = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
   const fmtDate = (v) => v ? new Date(v + "T12:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}) : "—";
@@ -381,9 +381,19 @@
     const w=rect.width,h=rect.height,cx=w/2,cy=h/2,r=Math.min(w,h)*.43,inner=r*.68,total=counts.reduce((a,b)=>a+b.value,0)||1;const colors=["#2aa779","#ed7583","#e6b24e","#7e8df4"];let start=-Math.PI/2;
     counts.forEach((c,i)=>{const end=start+(c.value/total)*Math.PI*2;ctx.beginPath();ctx.arc(cx,cy,r,start,end);ctx.arc(cx,cy,inner,end,start,true);ctx.closePath();ctx.fillStyle=colors[i];ctx.fill();start=end;});
   }
-  function renderOverview() {
+  async function renderOverview() {
     const role=state.profile.role,records=filteredRecords(),allToday=records.filter(r=>r.attendance_date===today()),present=allToday.filter(r=>r.status==="present"||r.status==="late").length;
     const attendancePct=allToday.length?Math.round(present/allToday.length*100):0;
+    let staffToday=[];
+    if(role==="admin"||role==="hod"||state.profile.institutional_role==="hod") {
+      try {
+        const staffResult=await sb.from("staff_attendance_records").select("id,staff_id,attendance_date,status,notes").eq("attendance_date",today());
+        if(!staffResult.error) {
+          staffToday=staffResult.data||[];
+          state.cache.staffRecords=staffToday;
+        }
+      } catch(e) { console.warn("Could not refresh staff attendance dashboard metrics",e); }
+    }
     const studentCount=role==="student"?1:role==="teacher"?state.cache.people.filter(p=>p.role==="student").length:state.cache.people.filter(p=>p.role==="student").length;
     const classCount=role==="student"?state.cache.classes.length:role==="teacher"?new Set(state.cache.assignments.map(a=>a.class_id)).size:state.cache.classes.length;
     const subtitle=role==="student"?"Your attendance and class activity in one place.":role==="teacher"?"Your classes and today's recorded attendance.":role==="admin"?"Institution-wide attendance, people and academic activity at a glance.":"Here’s what’s happening with attendance today.";
@@ -391,7 +401,7 @@
     let metrics=role==="student"
       ? [stat("My records",records.length,"Attendance entries","◷"),stat("Classes",classCount,"Enrolled classes","▤"),stat("Attended",records.filter(r=>["present","late"].includes(r.status)).length,"Present or late","✓"),stat("Overall attendance",records.length?Math.round(records.filter(r=>["present","late"].includes(r.status)).length/records.length*100)+"%":"—","Across recorded sessions","↗")]
       : role==="admin"
-        ? [stat("Students",state.cache.people.filter(p=>p.role==="student").length,"Registered student profiles","♙"),stat("Teachers",state.cache.people.filter(p=>p.role==="teacher"&&p.institutional_role!=="hod").length,"Teaching staff accounts","▤"),stat("HODs",state.cache.people.filter(p=>p.institutional_role==="hod"||p.role==="hod").length,"Department heads","⌂"),stat("Classes",classCount,"Institution class groups","▦"),stat("Present today",allToday.filter(r=>r.status==="present").length,"Students marked present today","✓"),stat("Attendance rate",allToday.length?attendancePct+"%":"—",allToday.length+" student records today","↗")]
+        ? [stat("Students",state.cache.people.filter(p=>p.role==="student").length,"Registered student profiles","♙"),stat("Teachers",state.cache.people.filter(p=>p.role==="teacher"&&p.institutional_role!=="hod").length,"Teaching staff accounts","▤"),stat("HODs",state.cache.people.filter(p=>p.institutional_role==="hod"||p.role==="hod").length,"Department heads","⌂"),stat("Classes",classCount,"Institution class groups","▦"),stat("Present today",allToday.filter(r=>r.status==="present").length,"Students marked present today","✓"),stat("Staff present today",staffToday.filter(r=>["present","late","half_day"].includes(r.status)).length,staffToday.length+" staff attendance records today","✓"),stat("Attendance rate",allToday.length?attendancePct+"%":"—",allToday.length+" student records today","↗")]
         : [stat("Students",studentCount,"Registered student profiles","♙"),stat("Classes",classCount,"Available to your role","▤"),stat("Present today",allToday.filter(r=>r.status==="present").length,"Today's marked present","✓"),stat("Attendance rate",allToday.length?attendancePct+"%":"—",allToday.length+" records for today","↗")];
     const hour=new Date().getHours();const greeting=hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";const displayName=String(state.profile?.full_name||"").trim().split(/\s+/)[0];setHeading(`${greeting}${displayName?", "+displayName:""}`,subtitle,"YOUR SCHOOL AT A GLANCE",role!=="student"?button("＋ Take attendance","go-attendance","button button-primary"):"");
     const weekStart=new Date();weekStart.setHours(0,0,0,0);weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));const weekly=Array.from({length:7},(_,i)=>{const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);const iso=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;const rr=records.filter(r=>r.attendance_date===iso);const n=rr.filter(r=>["present","late"].includes(r.status)).length;return {label:d.toLocaleDateString(undefined,{weekday:"short"}),value:rr.length?Math.round(n/rr.length*100):0};});
@@ -536,7 +546,7 @@
     if(!isHod&&!(isTeachingStaff(staff)||staff.institutional_role==="hod"||staff.role==="hod"))throw new Error("Choose an active Teacher, Staff or HOD account.");
     const {error}=await sb.from("staff_attendance_records").upsert({staff_id,attendance_date,status,notes,marked_by:state.user.id},{onConflict:"staff_id,attendance_date"});
     if(error)throw error;
-    toast("Staff attendance saved.");await loadRecentStaffAttendance();
+    toast("Staff attendance saved.");await loadRecentStaffAttendance();if(state.view==="overview")await renderView();else if(state.profile?.role==="admin")await loadAdminOverallAttendance().catch(e=>console.warn("Could not refresh Admin attendance table",e));
   }
   async function loadRoster() {
     if(state.profile?.role!=="teacher"||state.profile?.institutional_role==="hod") throw new Error("Only regular teachers can take student attendance. HOD and Admin have read-only overall attendance access.");
