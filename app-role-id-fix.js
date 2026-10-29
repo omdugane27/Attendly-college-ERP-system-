@@ -31,7 +31,7 @@
   }
 
   const $ = (id) => document.getElementById(id);
-  const state = { user: null, profile: null, view: "overview", cache: { people: [], classes: [], subjects: [], assignments: [], enrollments: [], records: [], staffRecords: [] }, authMode: "login", reportRows: [], chartEvents: [] };
+  const state = { user: null, profile: null, view: "overview", cache: { people: [], classes: [], subjects: [], assignments: [], enrollments: [], records: [], staffRecords: [] }, authMode: "login", reportRows: [], chartEvents: [], attendanceChannel: null, attendanceRefreshTimer: null };
   const escapeHtml = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
   const fmtDate = (v) => v ? new Date(v + "T12:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}) : "—";
@@ -139,6 +139,36 @@
     });
     showApp();
   }
+  function subscribeAttendanceUpdates() {
+    if (state.attendanceChannel) {
+      sb.removeChannel(state.attendanceChannel);
+      state.attendanceChannel = null;
+    }
+    if (state.attendanceRefreshTimer) {
+      clearInterval(state.attendanceRefreshTimer);
+      state.attendanceRefreshTimer = null;
+    }
+    if (!state.user || !state.profile) return;
+    const refresh = async () => {
+      if (!state.user || !state.profile) return;
+      try {
+        await loadCache();
+        if (["overview","attendance","reports"].includes(state.view)) await renderView();
+      } catch (err) {
+        console.warn("Live attendance refresh failed:", err?.message || err);
+      }
+    };
+    state.attendanceChannel = sb.channel("attendly-attendance-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "attendance_records" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "staff_attendance_records" }, refresh)
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.warn("Live attendance updates unavailable; using periodic refresh.");
+        }
+      });
+    state.attendanceRefreshTimer = setInterval(refresh, 30000);
+  }
+
   async function loadSession(user) {
     state.user=user;
     const {data,error}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();
@@ -147,7 +177,7 @@
     if(data.is_active===false) { state.user=null; state.profile=null; await sb.auth.signOut(); showAuth("This account is inactive. Contact an administrator."); return; }
     if(data.role==="student" && data.enrollment_status!=="approved") { await sb.auth.signOut(); showAuth("Your student account is "+(data.enrollment_status==="rejected"?"not approved. Contact your HOD.":"waiting for HOD course-enrollment approval.")+" You can log in after approval."); return; }
     profileLoaded(data);
-    try { await loadCache(); setView(state.view); }
+    try { await loadCache(); subscribeAttendanceUpdates(); setView(state.view); }
     catch(err) { console.error(err); showApp(); alertBox("Database error: "+err.message,"error"); }
   }
   async function renderHodDashboard() {
@@ -1279,6 +1309,6 @@
   $("profile-button").addEventListener("click",async()=>{try{await showPersonProfile(state.profile||{id:state.user?.id,email:state.user?.email,full_name:state.user?.user_metadata?.full_name,role:"student"});}catch(e){console.error("Could not open profile details",e);toast(e.message||"Could not load profile details.","error");}});
   document.querySelectorAll(".nav-item").forEach(el=>el.addEventListener("click",()=>setView(el.dataset.view)));
   window.addEventListener("resize",()=>state.chartEvents.forEach(fn=>{try{fn();}catch(e){console.warn(e);}}));
-  sb.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{if(session?.user){if(state.user?.id!==session.user.id||!state.profile)loadSession(session.user);}else{state.user=null;state.profile=null;showAuth();}},0);});
+  sb.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{if(session?.user){if(state.user?.id!==session.user.id||!state.profile)loadSession(session.user);}else{state.user=null;state.profile=null;if(state.attendanceChannel){sb.removeChannel(state.attendanceChannel);state.attendanceChannel=null;}if(state.attendanceRefreshTimer){clearInterval(state.attendanceRefreshTimer);state.attendanceRefreshTimer=null;}showAuth();}},0);});
   (async()=>{try{const {data:{session},error}=await sb.auth.getSession();if(error)throw error;if(session?.user)await loadSession(session.user);else showAuth();}catch(err){console.error(err);showAuth("Unable to connect to Supabase: "+err.message);}})();
 })();
