@@ -499,3 +499,49 @@ body>main[style*="max-width:1100px"] nav button{min-height:42px}
   body>main[style*="max-width:1100px"]>header{align-items:flex-start!important}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
+
+
+/* Public landing interactions: accessible dark theme and clearer navigation targets */
+#public-home{scroll-margin-top:12px}
+#public-home .public-topbar{position:relative;z-index:2}
+#public-home .public-links a,#public-home .public-brand,#public-home .pages-status,#public-home .feature-ribbon a{transition:opacity .18s,color .18s,background .18s,transform .18s}
+#public-home .public-links a:hover{color:#a9d4ff}
+#public-home .feature-ribbon a{border-radius:12px;padding:7px 10px;cursor:pointer}
+#public-home .feature-ribbon a:hover{background:#edf4ff;transform:translateY(-2px)}
+#public-home .feature-ribbon a:focus-visible,#public-home .public-links a:focus-visible,#public-home .pages-status:focus-visible,#public-home .public-brand:focus-visible{outline:3px solid #7db8ff;outline-offset:4px;border-radius:6px}
+#public-home .public-tools button[aria-pressed="true"]{background:#fff;color:#17345b;border-color:#fff}
+body.public-dark #public-home{background:#0b1424;color:#e5edf9}
+body.public-dark #public-home .feature-ribbon{background:#121f33;border-color:#253651;box-shadow:0 7px 24px #0003}
+body.public-dark #public-home .feature-ribbon a{color:#dbe8ff}
+body.public-dark #public-home .feature-ribbon a:hover{background:#203453}
+body.public-dark #public-home .auth-screen{background:linear-gradient(140deg,#111d31,#0b1424)}
+body.public-dark #public-home .auth-form-panel{background:transparent}
+body.public-dark #public-home .auth-form-wrap{background:#17253a;border-color:#2c405e;box-shadow:0 22px 60px #0004}
+body.public-dark #public-home .auth-form-heading h2,
+body.public-dark #public-home .auth-form-heading p,
+body.public-dark #public-home .auth-form-wrap label,
+body.public-dark #public-home .auth-switch,
+body.public-dark #public-home .auth-footnote{color:#e2ebfa}
+body.public-dark #public-home .auth-form-wrap input,
+body.public-dark #public-home .auth-form-wrap select,
+body.public-dark #public-home .auth-form-wrap textarea{background:#0f1b2e;border-color:#354963;color:#f0f5ff}
+body.public-dark #public-home .role-preview-section{background:linear-gradient(180deg,#101c30,#0b1424)}
+body.public-dark #public-home .preview-heading h2{color:#e7efff}
+body.public-dark #public-home .preview-heading p{color:#a5b6cf}
+body.public-dark #public-home .role-preview{background:#142239;border-color:#2b405c;box-shadow:0 10px 30px #0003}
+body.public-dark #public-home .role-preview h3,
+body.public-dark #public-home .role-preview p,
+body.public-dark #public-home .role-preview span,
+body.public-dark #public-home .role-preview small{color:#dce7f8}
+body.public-dark #public-home .mini-stat-row div,
+body.public-dark #public-home .preview-kpis div{background:#1b2b43;border-color:#31445f}
+body.public-dark #public-home .preview-main{background:#17263d}
+body.public-dark #public-home .public-footer{background:#0e1a2c;color:#d9e5f7;border-color:#2a3e59}
+@media(max-width:760px){
+ #public-home .public-topbar{gap:12px;flex-wrap:wrap}
+ #public-home .public-links{order:3;flex:1 0 100%;justify-content:flex-start;overflow-x:auto;padding:4px 0}
+ #public-home .public-tools{margin-left:auto}
+ #public-home .pages-status{min-width:0}
+ #public-home .feature-ribbon{justify-content:flex-start;overflow-x:auto;scroll-snap-type:x proximity}
+ #public-home .feature-ribbon a{flex:0 0 104px;scroll-snap-align:start}
+}
