@@ -1114,7 +1114,7 @@
   $("sidebar-scrim").addEventListener("click",()=>{$("sidebar").classList.remove("mobile-open");$("sidebar-scrim").classList.remove("visible");});
   $("modal-close").addEventListener("click",()=>$("modal").close());
   $("profile-button").addEventListener("click",async()=>{try{await showPersonProfile(state.profile||{id:state.user?.id,email:state.user?.email,full_name:state.user?.user_metadata?.full_name,role:"student"});}catch(e){console.error("Could not open profile details",e);toast(e.message||"Could not load profile details.","error");}});
-  document.querySelectorAll(".nav-item").forEach(el=>el.addEventListener("click",()=>setView(el.dataset.view)));
+  document.querySelectorAll(".nav-item[data-view]").forEach(el=>el.addEventListener("click",()=>setView(el.dataset.view)));
   window.addEventListener("resize",()=>state.chartEvents.forEach(fn=>{try{fn();}catch(e){console.warn(e);}}));
   sb.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{if(session?.user){if(state.user?.id!==session.user.id||!state.profile)loadSession(session.user);}else{state.user=null;state.profile=null;showAuth();}},0);});
   (async()=>{try{const {data:{session},error}=await sb.auth.getSession();if(error)throw error;if(session?.user)await loadSession(session.user);else showAuth();}catch(err){console.error(err);showAuth("Unable to connect to Supabase: "+err.message);}})();
