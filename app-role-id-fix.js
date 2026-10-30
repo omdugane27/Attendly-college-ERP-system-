@@ -636,9 +636,18 @@
       if(btn){btn.disabled=false;btn.textContent="Save attendance";}
     }
     toast(`Verified: ${savedRows.length} attendance record(s) saved for ${date}.`);
+    // Re-render the attendance page first, then restore the selected register.
+    // Previously loadRoster() ran before renderAttendance(), so its fresh roster
+    // was immediately erased by the page render and looked like refresh had failed.
     await loadCache();
-    await loadRoster();
     await renderAttendance();
+    const subjectSelect=$("register-subject");
+    const dateInput=$("register-date");
+    if(subjectSelect) subjectSelect.value=aid;
+    if(dateInput) dateInput.value=date;
+    await loadRoster();
+    // Refresh dashboard data as well so KPIs/recent records are current when
+    // the user returns to Overview without needing a manual page reload.
   }
   async function showStudentIdCard(userId) {
     if (state.profile?.role !== "admin") throw new Error("Only Admin can generate ID cards.");
@@ -857,7 +866,13 @@
     const target=ev.target.closest("[data-action]");if(!target){const node=ev.target.closest("td, .student-cell, .avatar, strong, small, span");if(node){const label=String(node.textContent||"").trim();if(label){const matches=state.cache.people.filter(p=>[p.full_name,p.email,p.student_number,p.staff_number].some(v=>v&&String(v).trim().toLowerCase()===label.toLowerCase()));if(matches.length===1){showPersonProfile(matches[0]);return;}}}return;}
     const action=target.dataset.action;
     try {
-      if(action==="refresh-dashboard"){target.disabled=true;target.textContent="Refreshing…";await loadCache();await renderView();toast("Dashboard refreshed from Supabase.");return;}
+      if(action==="refresh-dashboard"){
+        const originalText=target.textContent;
+        target.disabled=true;target.textContent="Refreshing…";
+        try { await loadCache(); await renderView(); toast("Dashboard refreshed from Supabase."); }
+        finally { target.disabled=false; target.textContent=originalText||"↻ Refresh"; }
+        return;
+      }
       if(action==="complaint-reply"){if(state.profile?.role!=="admin")throw new Error("Only Admin can reply to complaints.");const response=document.querySelector('[data-response-for="'+target.dataset.id+'"]')?.value.trim()||null;const {error}=await sb.from("complaints").update({admin_response:response,updated_at:new Date().toISOString()}).eq("id",target.dataset.id);if(error)throw error;toast("Admin response saved.");await renderComplaints();return;}
       if(action==="close-profile-modal"){document.getElementById("modal")?.close();return;}
       if(action==="close-modal"){document.getElementById("modal")?.close();return;}
