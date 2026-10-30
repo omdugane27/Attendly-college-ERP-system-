@@ -1097,7 +1097,8 @@
           const response=await fetch(SUPABASE_URL+"/functions/v1/admin-reset-password",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY},body:JSON.stringify({user_id:targetId,password})});
           const result=await response.json().catch(()=>({}));
           if(!response.ok)throw new Error(result.error||"Password reset failed.");
-          toast("Password reset successfully for "+targetEmail+". Share the temporary password securely.");
+          if(result.verified!==true)throw new Error("Password reset was not verified for email login. Please retry.");
+          toast("Password reset and email login verified for "+(result.email||targetEmail)+".");
           $("modal").close();
         });
       } else if(action==="create-teacher") {
