@@ -1078,11 +1078,18 @@
         await refreshAndRender();
       } else if(action==="permanent-delete") {
         if(state.profile.role!=="admin")throw new Error("Admin access required.");
-        if(!confirm("Permanently remove access and anonymize "+target.dataset.email+"? Personal details will be anonymized; attendance history will be retained."))return;
+        const targetEmail=target.dataset.email||"this account";
+        if(!confirm("PERMANENTLY DELETE "+targetEmail+"? The Auth login, profile, and all related database records including attendance/history will be deleted. This cannot be undone. Your own Admin account cannot be deleted."))return;
         const {data:{session}}=await sb.auth.getSession();
-        const response=await fetch(SUPABASE_URL+"/functions/v1/admin-remove-account",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY},body:JSON.stringify({user_id:target.dataset.userId})});
-        const result=await response.json();if(!response.ok)throw new Error(result.error||"Permanent deletion failed.");
-        toast(result.mode==="anonymized"?"Account anonymized; historical records retained.":"Account deleted.");await refreshAndRender();
+        if(!session?.access_token)throw new Error("Your session expired. Sign in again.");
+        target.disabled=true;
+        try {
+          const response=await fetch(SUPABASE_URL+"/functions/v1/admin-remove-account",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY},body:JSON.stringify({user_id:target.dataset.userId})});
+          const result=await response.json();
+          await refreshAndRender();
+          if(!response.ok||result.success!==true)throw new Error(result.error||"Deletion did not fully complete. Refresh the page and check the account before retrying.");
+          toast("Account permanently deleted. Dashboard KPIs and directory refreshed from Supabase.");
+        } finally { target.disabled=false; }
       } else if(action==="reset-password") {
         if(state.profile?.role!=="admin")throw new Error("Only Admin can reset account passwords.");
         const targetId=target.dataset.userId;
